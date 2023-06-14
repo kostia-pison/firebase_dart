@@ -38,7 +38,6 @@ class FirebaseDartFlutter {
               },
         authHandler: AuthHandler.from([
           GoogleAuthHandler(),
-          FacebookAuthHandler(),
           AppleAuthHandler(),
           FlutterAuthHandler(),
           const AuthHandler(),
