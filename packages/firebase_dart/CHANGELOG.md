@@ -1,3 +1,12 @@
+## 1.2.0
+
+ - **REFACTOR**: support web_socket_channel ^3.0.0. ([d32a2efb](https://github.com/appsup-dart/firebase_dart/commit/d32a2efb3151d08cf3f7d3ee9e16dcc76a9a295f))
+ - **REFACTOR**: support intl ^0.19.0 (pull request [#54](https://github.com/appsup-dart/firebase_dart/issues/54) from aitaro/develop). ([742e6200](https://github.com/appsup-dart/firebase_dart/commit/742e6200c403011d719b910888a980cccce1aca5))
+ - **REFACTOR**: use Path<Name> iso String for path arguments in Repo. ([f50c5c31](https://github.com/appsup-dart/firebase_dart/commit/f50c5c31b591227e72a9fe312e0633a00f1181de))
+ - **REFACTOR**: support intl ^0.19.0. ([0141c6a5](https://github.com/appsup-dart/firebase_dart/commit/0141c6a53e8f28c531f496b507150e813112914c))
+ - **FIX**: do not uri decode paths. ([e1dd1125](https://github.com/appsup-dart/firebase_dart/commit/e1dd1125b3a61e28b3b72ebda0838b6752480f5b))
+ - **FEAT**: add method FirebaseDart.updateDatabaseConfiguration. ([0197d323](https://github.com/appsup-dart/firebase_dart/commit/0197d32363d8987aeabc16c536fcc494e7e9645f))
+
 ## 1.1.5
 
  - **FIX**: replace deprecated SafetyNet with PlayIntegrity for phone number auth. ([b108445c](https://github.com/appsup-dart/firebase_dart/commit/b108445cc8b33641b4ac82566090cf4fa6bd7870))
