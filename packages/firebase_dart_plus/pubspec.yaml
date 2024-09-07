@@ -9,7 +9,7 @@ environment:
 dependencies:
   firebase_dart: ^1.2.0
   sortedmap: ^0.5.3
-  rxdart: ^0.27.0
+  rxdart: ">=0.27.0 <0.29.0"
 
 dev_dependencies:
   lints: ^2.0.0
