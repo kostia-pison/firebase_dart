@@ -1,3 +1,7 @@
+## 1.1.7
+
+ - **DOCS**: fix example for latest flutter version. ([bccdc2a2](https://github.com/appsup-dart/firebase_dart/commit/bccdc2a26e7b8b4a87f36ddc181ca464a23c480a))
+
 ## 1.1.6
 
  - Update a dependency to the latest release.

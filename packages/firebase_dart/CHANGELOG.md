@@ -1,3 +1,8 @@
+## 1.2.1
+
+ - **REFACTOR**: support for rxdart ^0.28.0. ([c0be7a10](https://github.com/appsup-dart/firebase_dart/commit/c0be7a10579e26412fea8ecd73a32c378868e002))
+ - **REFACTOR**: support for js ^0.7.0. ([0f9d57c8](https://github.com/appsup-dart/firebase_dart/commit/0f9d57c80a108a4126fb35bd3734534f3fef539b))
+
 ## 1.2.0
 
  - **REFACTOR**: support web_socket_channel ^3.0.0. ([d32a2efb](https://github.com/appsup-dart/firebase_dart/commit/d32a2efb3151d08cf3f7d3ee9e16dcc76a9a295f))
