@@ -37,6 +37,8 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
+    namespace 'be.appsup.firebase_dart_flutter'
+
     compileSdkVersion 29
 
     defaultConfig {
