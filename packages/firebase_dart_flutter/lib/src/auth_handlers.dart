@@ -35,7 +35,7 @@ class FacebookAuthHandler extends DirectAuthHandler {
       var facebookLogin = FacebookAuth.instance;
       var accessToken = (await facebookLogin.login()).accessToken!;
 
-      return FacebookAuthProvider.credential(accessToken.token);
+      return FacebookAuthProvider.credential(accessToken.tokenString);
     } catch (e) {
       return null;
     }
