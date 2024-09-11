@@ -80,7 +80,7 @@ class AppleAuthHandler extends DirectAuthHandler<OAuthProvider> {
   @override
   Future<AuthCredential?> directSignIn(
       FirebaseApp app, OAuthProvider provider) async {
-    if (!platform_info.Platform.instance.isIOS) {
+    if (!platform_info.Platform.instance.iOS) {
       return null;
     }
     final credential = await SignInWithApple.getAppleIDCredential(
@@ -106,7 +106,7 @@ class FlutterAuthHandler extends FirebaseAppAuthHandler {
   Future<AuthCredential?> getSignInResult(FirebaseApp app) async {
     if (!kIsWeb) {
       return _lastAuthResult ??= Future(() async {
-        var v = await (platform_info.Platform.instance.isAndroid
+        var v = await (platform_info.Platform.instance.android
             ? _getResult('getAuthResult')
             : _getDeepLinkResult());
         _lastAuthResult = null;
@@ -160,14 +160,14 @@ class FlutterApplicationVerifier extends BaseApplicationVerifier {
   Future<String>? _lastRecaptchaResult;
 
   late final Future<bool> _isGooglePlayServicesAvailable = Future(() async {
-    if (kIsWeb || !platform_info.Platform.instance.isAndroid) return false;
+    if (kIsWeb || !platform_info.Platform.instance.android) return false;
     return await _channel.invokeMethod<bool>('isGooglePlayServicesAvailable') ??
         false;
   });
 
   @override
   Future<String> getVerifyResult(FirebaseApp app) {
-    if (!kIsWeb && platform_info.Platform.instance.isAndroid) {
+    if (!kIsWeb && platform_info.Platform.instance.android) {
       return _lastRecaptchaResult ??= Future(() async {
         var v = await _getResult('getVerifyResult');
         _lastRecaptchaResult = null;
@@ -260,7 +260,7 @@ class AndroidSmsRetriever extends SmsRetriever {
 
   @override
   Future<String?> getAppSignatureHash() {
-    if (!kIsWeb && platform_info.Platform.instance.isAndroid) {
+    if (!kIsWeb && platform_info.Platform.instance.android) {
       return _appSignatureHash;
     }
     return Future.value();
@@ -268,7 +268,7 @@ class AndroidSmsRetriever extends SmsRetriever {
 
   @override
   Future<String?> retrieveSms() {
-    if (!kIsWeb && platform_info.Platform.instance.isAndroid) {
+    if (!kIsWeb && platform_info.Platform.instance.android) {
       return Future(() async {
         var v = (await _channel.invokeMethod<String>('retrieveSms'))!;
         return v;

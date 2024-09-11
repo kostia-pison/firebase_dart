@@ -54,41 +54,40 @@ class FirebaseDartFlutter {
     if (kIsWeb) {
       return Platform.web(
         currentUrl: Uri.base.toString(),
-        isMobile: p.isMobile,
+        isMobile: p.mobile,
         isOnline: true,
       );
     }
 
-    switch (p.operatingSystem) {
-      case platform_info.OperatingSystem.android:
-        var i = await PackageInfo.fromPlatform();
-        return Platform.android(
-          isOnline: true,
-          packageId: i.packageName,
-          sha1Cert: await _channel.invokeMethod('getSha1Cert'),
-        );
-      case platform_info.OperatingSystem.iOS:
-        var i = await PackageInfo.fromPlatform();
-        return Platform.ios(
-          isOnline: true,
-          appId: i.packageName,
-        );
-      case platform_info.OperatingSystem.macOS:
-        var i = await PackageInfo.fromPlatform();
-        return Platform.macos(
-          isOnline: true,
-          appId: i.packageName,
-        );
-      case platform_info.OperatingSystem.linux:
-        return Platform.linux(
-          isOnline: true,
-        );
-      case platform_info.OperatingSystem.windows:
-        return Platform.windows(
-          isOnline: true,
-        );
-      default:
-        throw UnsupportedError('Unsupported platform ${p.operatingSystem}');
+    if (p.android) {
+      var i = await PackageInfo.fromPlatform();
+      return Platform.android(
+        isOnline: true,
+        packageId: i.packageName,
+        sha1Cert: await _channel.invokeMethod('getSha1Cert'),
+      );
+    } else if (p.iOS) {
+      var i = await PackageInfo.fromPlatform();
+      return Platform.ios(
+        isOnline: true,
+        appId: i.packageName,
+      );
+    } else if (p.macOS) {
+      var i = await PackageInfo.fromPlatform();
+      return Platform.macos(
+        isOnline: true,
+        appId: i.packageName,
+      );
+    } else if (p.linux) {
+      return Platform.linux(
+        isOnline: true,
+      );
+    } else if (p.windows) {
+      return Platform.windows(
+        isOnline: true,
+      );
+    } else {
+      throw UnsupportedError('Unsupported platform ${p.operatingSystem}');
     }
   }
 }
