@@ -1,3 +1,12 @@
+## 1.1.8
+
+ - **REFACTOR**: upgrade flutter_facebook_auth to ^7.0.0. ([45f43585](https://github.com/appsup-dart/firebase_dart/commit/45f43585efd5de4be4c339516651118b74ed430e))
+ - **REFACTOR**: upgrade google_sign_in to ^6.0.0. ([020e5fa4](https://github.com/appsup-dart/firebase_dart/commit/020e5fa4f04c255b16b4012eafe7360822954a77))
+ - **REFACTOR**: upgrade sign_in_with_apple to ^6.0.0. ([ce0ea1e4](https://github.com/appsup-dart/firebase_dart/commit/ce0ea1e400af2d892204d72da390c79adbc02f55))
+ - **REFACTOR**: add `namespace` to build.gradle. ([ca6e422b](https://github.com/appsup-dart/firebase_dart/commit/ca6e422b1b1201673c875808bc649b31d6656a74))
+ - **REFACTOR**: upgrade platform_info to ^5.0.0. ([a8238ebf](https://github.com/appsup-dart/firebase_dart/commit/a8238ebf559a29d0e64fb67a267bc6d764ce2939))
+ - **FIX**: remove package from AndroidManifest.xml. ([cad21f57](https://github.com/appsup-dart/firebase_dart/commit/cad21f579d73afb959b5198991824e36c8b075cd))
+
 ## 1.1.7
 
  - **DOCS**: fix example for latest flutter version. ([bccdc2a2](https://github.com/appsup-dart/firebase_dart/commit/bccdc2a26e7b8b4a87f36ddc181ca464a23c480a))
