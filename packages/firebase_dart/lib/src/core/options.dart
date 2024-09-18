@@ -159,7 +159,7 @@ class FirebaseOptions {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! FirebaseOptions) return false;
     return other.asMap.toString() == asMap.toString();

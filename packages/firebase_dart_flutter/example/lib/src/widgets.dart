@@ -43,10 +43,12 @@ class _ActionDialogState<T> extends State<ActionDialog<T>> {
                   setState(() => _inProgress = true);
                   try {
                     var v = await widget.onContinue();
-                    if (mounted) Navigator.pop(context, v);
+                    if (context.mounted) Navigator.pop(context, v);
                   } catch (e) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text('$e')));
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text('$e')));
+                    }
                     setState(() => _inProgress = false);
                     rethrow;
                   }

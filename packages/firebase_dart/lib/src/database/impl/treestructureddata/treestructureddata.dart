@@ -1,7 +1,7 @@
 // Copyright (c) 2016, Rik Bellens. All rights reserved. Use of this source code
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
-part of firebase.treestructureddata;
+part of '../treestructureddata.dart';
 
 class Snapshot extends UnmodifiableMapBase<Name, Snapshot> {
   final dynamic _exportJson;
@@ -270,7 +270,7 @@ abstract class TreeStructuredData extends ComparableTreeNode<Name, Value?> {
   dynamic toJson([bool exportFormat = false]);
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is TreeStructuredData &&
         other.priority == priority &&
@@ -440,9 +440,7 @@ class UnmodifiableFilteredMap<K extends Comparable, V>
           ? map as UnmodifiableFilteredMap<K, V>
           : UnmodifiableFilteredMap._(map);
 
-  UnmodifiableFilteredMap._(FilteredMap<K, V> map)
-      : _map = map,
-        super(map);
+  UnmodifiableFilteredMap._(FilteredMap<K, V> super.map) : _map = map;
 
   @override
   SortedMap<K, V> clone() => this;

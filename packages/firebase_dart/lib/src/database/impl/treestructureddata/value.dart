@@ -1,7 +1,7 @@
 // Copyright (c) 2016, Rik Bellens. All rights reserved. Use of this source code
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
-part of firebase.treestructureddata;
+part of '../treestructureddata.dart';
 
 extension ServerValueX on ServerValue {
   static const Map<String, ServerValue> values = {
@@ -89,7 +89,7 @@ class Value implements Comparable<Value> {
   int get hashCode => value.hashCode;
 
   @override
-  bool operator ==(dynamic other) => other is Value && value == other.value;
+  bool operator ==(Object other) => other is Value && value == other.value;
 
   dynamic toJson() => value;
 

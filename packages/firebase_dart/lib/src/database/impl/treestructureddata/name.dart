@@ -50,7 +50,7 @@ abstract class Name implements Pattern, Comparable<Name> {
   int get hashCode => Object.hash(this is _SpecialName, _value.hashCode);
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is Name &&
         (this is _SpecialName == other is _SpecialName) &&

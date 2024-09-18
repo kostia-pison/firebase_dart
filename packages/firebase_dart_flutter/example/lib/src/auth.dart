@@ -19,9 +19,9 @@ class AuthTab extends StatelessWidget {
       stream: auth.userChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Column(
+          return const Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [CircularProgressIndicator()],
+            children: [CircularProgressIndicator()],
           );
         }
 
@@ -78,6 +78,7 @@ class AuthTab extends StatelessWidget {
                             return email;
                           });
                       if (email == null) return;
+                      if (!context.mounted) return;
                       await showEditFieldDialog(
                           context: context,
                           labelText: 'email',

@@ -20,7 +20,7 @@ class Path<K> extends UnmodifiableListView<K> {
   int get hashCode => const ListEquality().hash(this);
 
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       other is Path && const ListEquality().equals(this, other);
 
   bool isDescendantOf(Path<K> other) {

@@ -18,10 +18,10 @@ class FirebaseAppAuthCredential extends AuthCredential {
   final String link;
 
   FirebaseAppAuthCredential({
-    required String providerId,
+    required super.providerId,
     required this.sessionId,
     required this.link,
-  }) : super(providerId: providerId, signInMethod: providerId);
+  }) : super(signInMethod: providerId);
 }
 
 abstract class FirebaseAppAuthHandler implements AuthHandler {

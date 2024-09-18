@@ -1,5 +1,4 @@
 import 'package:firebase_dart/auth.dart';
-import 'package:firebase_dart/database.dart';
 import 'package:firebase_dart/src/auth/app_verifier.dart';
 import 'package:firebase_dart/src/auth/iframeclient/auth_methods.dart';
 import 'package:firebase_dart/src/auth/sms_retriever.dart';
@@ -15,9 +14,7 @@ import 'package:meta/meta.dart';
 
 import '../core.dart';
 import '../src/core.dart';
-import '../src/database/impl/firebase_impl.dart';
 import '../src/database/impl/repo.dart';
-import '../src/implementation/isolate/database.dart';
 
 export 'package:firebase_dart/src/auth/utils.dart'
     show

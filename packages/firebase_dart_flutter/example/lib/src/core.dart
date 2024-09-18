@@ -212,7 +212,7 @@ class _NewAppDialogState extends State<NewAppDialog> {
         ).asMap
       ];
       await box.put('apps', apps);
-      if (mounted) Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       return;
     }
 
@@ -283,9 +283,9 @@ class AppPage extends StatelessWidget {
       return app;
     }), builder: (context, snapshot) {
       if (!snapshot.hasData) {
-        return Column(
+        return const Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [CircularProgressIndicator()],
+          children: [CircularProgressIndicator()],
         );
       }
       return DefaultTabController(
