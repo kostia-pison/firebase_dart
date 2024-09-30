@@ -70,18 +70,19 @@ void _doTest(int? seed) {
     var tester = RandomSyncTreeTester(seed: seed);
     for (var i = 0; i < 1000; i++) {
       tester.next();
-      fakeAsync.flushTimers();
       fakeAsync.flushMicrotasks();
-      if (tester.outstandingListens.isEmpty) {
-        tester.checkServerVersions();
-        if (tester.outstandingWrites.isEmpty) {
-          // TODO: once completeness on user operation is correctly implemented, local versions should also match when there are still outstanding writes
-          tester.checkLocalVersions();
-        }
-      }
+      fakeAsync.flushTimers();
+      tester.checkServerVersions();
+      tester.checkLocalVersions();
     }
-    tester.flush();
-    tester.checkLocalVersions();
+    while (tester.outstandingListens.isNotEmpty ||
+        tester.outstandingWrites.isNotEmpty) {
+      tester.flush();
+      fakeAsync.flushMicrotasks();
+      fakeAsync.flushTimers();
+      tester.checkServerVersions();
+      tester.checkLocalVersions();
+    }
 
     tester.checkAllViewsComplete();
   });

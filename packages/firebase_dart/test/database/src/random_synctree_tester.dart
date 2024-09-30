@@ -210,6 +210,10 @@ class RandomSyncTreeTester {
 
   void checkServerVersions() {
     syncTree.root.forEachNode((path, node) {
+      if (outstandingListens
+          .any((q) => path.isDescendantOf(q.path) || path == q.path)) {
+        return;
+      }
       node.views.forEach((params, view) {
         if (view.data.serverVersion.isComplete) {
           // complete data should match with value on server
@@ -256,6 +260,16 @@ class RandomSyncTreeTester {
 
     syncTree.root.forEachNode((path, node) {
       node.views.forEach((params, view) {
+        if (outstandingListens
+            .any((q) => path.isDescendantOf(q.path) || path == q.path)) {
+          return;
+        }
+
+        // TODO: once completeness on user operation is correctly implemented, local versions should also match when there are still outstanding writes
+        if (outstandingWrites
+            .map((v) => v.value)
+            .any((o) => o.path.isDescendantOf(path) || path == o.path)) return;
+
         if (view.data.localVersion.isComplete) {
           // complete data should match with value on server
           var serverValue = v.getChild(path).withFilter(params);
