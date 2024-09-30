@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:firebase_dart/src/database/impl/data_observer.dart';
@@ -20,7 +21,7 @@ import '../persistence/mock.dart';
 final _logger = Logger('firebase.test.random_synctree');
 
 class MemoryQueryRegistrar extends QueryRegistrar {
-  final List<QuerySpec> outstandingListens;
+  final List<MapEntry<QuerySpec, Completer<void>>> outstandingListens;
 
   final Map<QuerySpec, TreeStructuredData> registeredListens;
 
@@ -29,7 +30,9 @@ class MemoryQueryRegistrar extends QueryRegistrar {
   @override
   Future<bool> register(QuerySpec query,
       {String? hash, required int priority}) async {
-    outstandingListens.add(query);
+    var c = Completer<void>();
+    outstandingListens.add(MapEntry(query, c));
+    await c.future;
     return true;
   }
 
@@ -67,7 +70,7 @@ class RandomSyncTreeTester {
 
   int _currentWriteId = 0;
 
-  final List<QuerySpec> outstandingListens = [];
+  final List<MapEntry<QuerySpec, Completer<void>>> outstandingListens = [];
 
   final Map<QuerySpec, EventListener> userListens = {};
 
@@ -131,9 +134,11 @@ class RandomSyncTreeTester {
   void _handleOutstandingListen() {
     if (outstandingListens.isEmpty) return;
     _logger.fine('handle outstanding listen');
-    var query = outstandingListens.removeAt(0);
+    var e = outstandingListens.removeAt(0);
+    var query = e.key;
     _logger.fine('* $query');
     _updateCurrentServerStateToQuery(query);
+    e.value.complete();
   }
 
   void _handleOutstandingWrite() {
@@ -141,7 +146,6 @@ class RandomSyncTreeTester {
     _logger.fine('handle outstanding write');
 
     var op = outstandingWrites.removeAt(0);
-    _logger.fine('* $op');
     var path = op.value.path;
     var isEmptyPriorityError = path.isNotEmpty &&
         path.last.isPriorityChildName &&
@@ -149,7 +153,9 @@ class RandomSyncTreeTester {
 
     if (random.nextDouble() < revertProbability || isEmptyPriorityError) {
       syncTree.applyAck(op.value.path, op.key, false);
+      _logger.fine('* revert: $op');
     } else {
+      _logger.fine('* ack: $op');
       _updateServerState(op.value.apply(_currentServerState));
       syncTree.applyAck(op.value.path, op.key, true);
     }
@@ -204,13 +210,16 @@ class RandomSyncTreeTester {
         .loadTrackedQueries()
         .where((v) => v.active)
         .map((v) => v.querySpec);
-    expect(trackedQueries.toSet(),
-        <QuerySpec>{...outstandingListens, ...registeredListens.keys});
+    expect(trackedQueries.toSet(), <QuerySpec>{
+      ...outstandingListens.map((v) => v.key),
+      ...registeredListens.keys
+    });
   }
 
   void checkServerVersions() {
     syncTree.root.forEachNode((path, node) {
       if (outstandingListens
+          .map((v) => v.key)
           .any((q) => path.isDescendantOf(q.path) || path == q.path)) {
         return;
       }
@@ -261,6 +270,7 @@ class RandomSyncTreeTester {
     syncTree.root.forEachNode((path, node) {
       node.views.forEach((params, view) {
         if (outstandingListens
+            .map((v) => v.key)
             .any((q) => path.isDescendantOf(q.path) || path == q.path)) {
           return;
         }
