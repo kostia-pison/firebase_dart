@@ -11,7 +11,7 @@ import 'operations/tree.dart';
 import 'tree.dart';
 import 'treestructureddata.dart';
 
-enum OperationEventType { overwrite, merge, listenRevoked }
+enum OperationEventType { overwrite, merge, listenRevoked, listenUpgrade }
 
 class OperationEvent {
   final Path<Name>? path;

@@ -3,7 +3,7 @@ part of firebase_dart.database.backend_connection;
 abstract class Backend {
   Auth? _auth;
 
-  Future<void> listen(String path, EventListener listener,
+  Future<List<String>> listen(String path, EventListener listener,
       {QueryFilter query = const QueryFilter(), String? hash});
 
   Future<void> unlisten(String path, EventListener? listener,

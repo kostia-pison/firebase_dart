@@ -6,10 +6,11 @@ class SyncTreeBackend extends Backend {
   SyncTreeBackend(this.syncTree);
 
   @override
-  Future<void> listen(String path, EventListener listener,
+  Future<List<String>> listen(String path, EventListener listener,
       {QueryFilter query = const QueryFilter(), String? hash}) async {
     await syncTree.addEventListener(
         'value', Name.parsePath(path), query, listener);
+    return [];
   }
 
   @override

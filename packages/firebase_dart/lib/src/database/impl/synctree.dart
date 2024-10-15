@@ -420,7 +420,13 @@ class SyncPoint {
         if (operation.path.isEmpty) {
           if (views.isNotEmpty &&
               views.values.every((v) => v.masterFilter.limits)) {
-            _logger.fine('no filter: upgrade ${views.keys}');
+            _logger.fine('no filter: upgrade $debugName ${views.keys}');
+
+            // one of the queries uses a not defined index, so we received the full content
+            // we will only know which query should become the master filter after
+            // a `no_index` warning is received and the applyUpgrade is called
+            // so we will upgrade all queries here and adopt all event targets
+            // once we know the master filter.
             for (var v in views.values) {
               v.upgrade();
             }
@@ -456,6 +462,19 @@ class SyncPoint {
 
   @override
   String toString() => 'SyncPoint[$debugName]';
+
+  void applyUpgrade(QueryFilter filter) {
+    var masterView = views[filter];
+    if (masterView == null) return;
+    for (var v in views.values) {
+      if (v == masterView) continue;
+
+      for (var e in v.observers.entries) {
+        masterView.adoptEventTarget(e.key, e.value);
+      }
+    }
+    views.removeWhere((k, v) => v != masterView);
+  }
 }
 
 /// Registers listeners for queries
@@ -972,5 +991,10 @@ class SyncTree {
       }
       value._newQueries.clear();
     });
+  }
+
+  void applyUpgrade(Path<Name> path, QueryFilter filter) {
+    _logger.fine(() => 'apply upgrade on $path $filter');
+    _doOnSyncPoint(path, (point) => point.applyUpgrade(filter));
   }
 }

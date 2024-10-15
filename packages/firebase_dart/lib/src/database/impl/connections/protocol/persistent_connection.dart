@@ -187,6 +187,12 @@ class PersistentConnectionImpl extends PersistentConnection
     _doIdleCheck();
     try {
       var body = await _request(r);
+      if (body.warnings != null && body.warnings!.contains('no_index')) {
+        if (!_onDataOperation.isClosed) {
+          _onDataOperation.add(OperationEvent(
+              OperationEventType.listenUpgrade, def.path, null, def));
+        }
+      }
       return body.warnings ?? [];
     } on FirebaseDatabaseException {
       _tagToQuery.remove(tag);

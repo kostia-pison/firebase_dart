@@ -120,6 +120,8 @@ class Repo {
     _connection.onDataOperation.listen((event) {
       if (event.type == OperationEventType.listenRevoked) {
         _syncTree.applyListenRevoked(event.path!, event.query?.params);
+      } else if (event.type == OperationEventType.listenUpgrade) {
+        _syncTree.applyUpgrade(event.path!, event.query!.params);
       } else {
         _syncTree.applyServerOperation(event.operation!, event.query);
       }
@@ -524,7 +526,13 @@ class RemoteQueryRegistrar extends QueryRegistrar {
       var warnings = await connection.listen(query.path.join('/'),
           query: query.params, hash: hash);
       for (var w in warnings) {
-        _logger.warning(w);
+        if (w == 'no_index') {
+          _logger.warning(
+              'No index at ${query.path.join('/')} for child "${query.params.orderBy}"');
+        } else {
+          _logger.warning(
+              'Register query at ${query.path.join('/')} succeeded with warning: $w');
+        }
       }
       return true;
     } on FirebaseDatabaseException catch (e) {

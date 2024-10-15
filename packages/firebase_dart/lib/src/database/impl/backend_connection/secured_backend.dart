@@ -23,7 +23,7 @@ class SecuredBackend extends Backend {
   }
 
   @override
-  Future<void> listen(String path, EventListener listener,
+  Future<List<String>> listen(String path, EventListener listener,
       {QueryFilter query = const QueryFilter(), String? hash}) async {
     var completer = Completer();
 
@@ -47,12 +47,32 @@ class SecuredBackend extends Backend {
       }
     }); // TODO cancel subscription on unlisten
     await completer.future;
-    await unsecuredBackend.listen(path, listener, query: query, hash: hash);
+
+    var warnings = <String>[];
+    if (!query.orderBy.startsWith('.')) {
+      var indexed = securityTree.isIndexed(path: path, child: query.orderBy);
+      if (!indexed) {
+        query = const QueryFilter();
+        listener(UpgradeEvent());
+        warnings.add('no_index');
+      }
+    }
+    return [
+      ...warnings,
+      ...await unsecuredBackend.listen(path, listener,
+          query: query, hash: hash),
+    ];
   }
 
   @override
   Future<void> unlisten(String path, EventListener? listener,
       {QueryFilter query = const QueryFilter()}) async {
+    if (!query.orderBy.startsWith('.')) {
+      var indexed = securityTree.isIndexed(path: path, child: query.orderBy);
+      if (!indexed) {
+        query = const QueryFilter();
+      }
+    }
     await unsecuredBackend.unlisten(path, listener, query: query);
   }
 
@@ -67,4 +87,8 @@ class SecuredBackend extends Backend {
     // TODO check write rules and validate rules
     await unsecuredBackend.put(path, value, hash: hash);
   }
+}
+
+class UpgradeEvent extends Event {
+  UpgradeEvent() : super('upgrade');
 }

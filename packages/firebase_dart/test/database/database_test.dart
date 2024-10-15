@@ -280,6 +280,18 @@ void testsWith(Map<String, dynamic> secrets, {required bool isolated}) {
     db1 = FirebaseDatabase(app: app1);
     db2 = FirebaseDatabase(app: app2);
     dbAlt1 = FirebaseDatabase(app: appAlt1);
+    if (Uri.parse(options.databaseURL!).scheme == 'mem') {
+      var backend = MemoryBackend.getInstance(ref.url.host);
+      backend.securityRules = {
+        'test': {
+          '.read': 'true',
+          '.write': 'true',
+          'query': {
+            '.indexOn': ['order'],
+          }
+        },
+      };
+    }
   });
 
   tearDown(() async {
@@ -1170,6 +1182,45 @@ void testsWith(Map<String, dynamic> secrets, {required bool isolated}) {
           await q.startAt(2, key: 'text1').get(), {'text1': 'c', 'text3': 'a'});
 
       expect(await q.startAt(2, key: 'text2').get(), {'text3': 'a'});
+    });
+
+    test('Order by child, without index', () async {
+      var iref = dbAlt1.reference().child(ref.url.path);
+
+      await iref.set({
+        'text1': {'order': 'c', 'not-indexed': 'z'},
+        'text3': {'order': 'a', 'not-indexed': 'y'}
+      });
+
+      var q = ref.orderByChild('order');
+
+      var s = q.equalTo('c').onValue.listen((e) {});
+
+      await Future.delayed(Duration(milliseconds: 200));
+
+      expect(await ref.orderByChild('not-indexed').equalTo('z').get(), {
+        'text1': {'order': 'c', 'not-indexed': 'z'}
+      }); // will upgrade all query
+
+      await Future.delayed(Duration(milliseconds: 100));
+
+      expect(await ref.orderByChild('not-indexed').equalTo('y').get(), {
+        'text3': {'order': 'a', 'not-indexed': 'y'}
+      });
+
+      await Future.delayed(Duration(milliseconds: 2100));
+
+      await iref.update({
+        'text2': {'order': 'b', 'not-indexed': 'x'}
+      });
+
+      await Future.delayed(Duration(milliseconds: 100));
+
+      expect(await q.equalTo('b').get(), {
+        'text2': {'order': 'b', 'not-indexed': 'x'}
+      });
+
+      await s.cancel();
     });
     test('Order by child', () async {
       await ref.set({

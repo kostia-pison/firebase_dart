@@ -38,6 +38,19 @@ class SecurityTree {
     });
   }
 
+  bool isIndexed({required String path, required String child}) {
+    var p = Name.parsePath(path);
+    var node = root;
+
+    for (var n in p) {
+      var v = node.children[n.asString()];
+      if (v == null) return false;
+      node = v;
+    }
+
+    return node.value.indexOn.contains(child);
+  }
+
   Iterable<Stream<bool?>> _canReadStreams(
       {RuleDataSnapshot? root, required String path, Auth? auth}) sync* {
     var p = Name.parsePath(path);

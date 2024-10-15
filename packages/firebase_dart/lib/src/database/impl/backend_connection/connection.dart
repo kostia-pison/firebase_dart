@@ -69,32 +69,38 @@ class BackendConnection {
           await backend.auth(null);
           break;
         case DataMessage.actionListen:
-          var listener =
-              _listeners.putIfAbsent(message.body.path, () => {}).putIfAbsent(
-                  message.body.query,
-                  () => (Event event) {
-                        sendMessage(DataMessage(
-                            event is CancelEvent
-                                ? DataMessage.actionListenRevoked
-                                : DataMessage.actionSet,
-                            MessageBody(
-                                tag: (message.body.query?.limits ?? false)
-                                    ? message.body.tag
-                                    : null,
-                                path: message.body.path,
-                                data: event is CancelEvent
-                                    ? 'permission denied'
-                                    : (event as ValueEvent<TreeStructuredData>)
-                                        .value
-                                        .toJson(true))));
-                      });
+          var listener = _listeners
+              .putIfAbsent(message.body.path, () => {})
+              .putIfAbsent(message.body.query, () {
+            var tag =
+                (message.body.query?.limits ?? false) ? message.body.tag : null;
+            return (Event event) {
+              if (event is UpgradeEvent) {
+                tag = null;
+                return;
+              }
+              sendMessage(DataMessage(
+                  event is CancelEvent
+                      ? DataMessage.actionListenRevoked
+                      : DataMessage.actionSet,
+                  MessageBody(
+                      tag: tag,
+                      path: message.body.path,
+                      data: event is CancelEvent
+                          ? 'permission denied'
+                          : (event as ValueEvent<TreeStructuredData>)
+                              .value
+                              .toJson(true))));
+            };
+          });
 
           try {
-            await backend.listen(
+            var warnings = await backend.listen(
               message.body.path!,
               listener,
               query: message.body.query ?? const QueryFilter(),
             );
+            data = {'w': warnings};
           } on FirebaseDatabaseException catch (e) {
             status = e.code;
             data = e.message;
