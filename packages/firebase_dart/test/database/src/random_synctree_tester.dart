@@ -228,7 +228,7 @@ class RandomSyncTreeTester {
           // complete data should match with value on server
           var serverValue =
               currentServerState.getChild(path).withFilter(params);
-          var serverView = view.data.serverVersion.value;
+          var serverView = view.data.serverVersion.value.withFilter(params);
           if (serverValue != serverView) {
             throw StateError('SyncTree has an incorrect view of the server');
           }

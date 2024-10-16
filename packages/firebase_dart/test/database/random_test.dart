@@ -35,6 +35,9 @@ void main() async {
     test('Random synctree test seed=1725739105606', () {
       _doTest(1725739105606);
     });
+    test('Random synctree test seed=1724925689256', () {
+      _doTest(1724925689256);
+    });
 
     test('Random synctree test seed=epoch', () {
       for (var i = 0; i < 10; i++) {

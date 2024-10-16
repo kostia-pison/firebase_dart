@@ -417,7 +417,7 @@ class SyncPoint {
       ViewOperationSource source, int? writeId) {
     if (filter == null || filter == const QueryFilter()) {
       if (source == ViewOperationSource.server) {
-        if (operation.path.isEmpty) {
+        if (operation.mayUpgrade && operation.path.isEmpty) {
           if (views.isNotEmpty &&
               views.values.every((v) => v.masterFilter.limits)) {
             _logger.fine('no filter: upgrade $debugName ${views.keys}');

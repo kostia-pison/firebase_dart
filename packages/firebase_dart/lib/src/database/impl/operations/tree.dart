@@ -12,8 +12,9 @@ import '../treestructureddata.dart';
 class TreeOperation extends Operation {
   final Path<Name> path;
   final Operation? nodeOperation;
+  final bool mayUpgrade;
 
-  TreeOperation(this.path, this.nodeOperation);
+  TreeOperation(this.path, this.nodeOperation, {this.mayUpgrade = true});
 
   factory TreeOperation.overwrite(Path<Name> path, TreeStructuredData value,
       {bool valueOnly = false}) {
@@ -40,7 +41,7 @@ class TreeOperation extends Operation {
     if (path.isEmpty) {
       var op = nodeOperation!.operationForChild(key);
       if (op == null) return null;
-      return TreeOperation(path, op);
+      return TreeOperation(path, op, mayUpgrade: false);
     }
     if (path.first != key) return null;
     return TreeOperation(path.skip(1), nodeOperation);
