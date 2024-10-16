@@ -1,3 +1,7 @@
+## 1.1.9
+
+ - **REFACTOR**: upgrade minimum sdk to 2.19.0. ([c943f005](https://github.com/appsup-dart/firebase_dart/commit/c943f005c5e444e845d4b64e38c28bca835211a6))
+
 ## 1.1.8
 
  - **REFACTOR**: upgrade flutter_facebook_auth to ^7.0.0. ([45f43585](https://github.com/appsup-dart/firebase_dart/commit/45f43585efd5de4be4c339516651118b74ed430e))

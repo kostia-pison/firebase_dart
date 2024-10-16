@@ -1,3 +1,7 @@
+## 0.1.0+8
+
+ - Update a dependency to the latest release.
+
 ## 0.1.0+7
 
  - **REFACTOR**: support for rxdart ^0.28.0. ([19216f3a](https://github.com/appsup-dart/firebase_dart/commit/19216f3ab387a0779c7163443fa1e161b0adbf89))

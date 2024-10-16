@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2024-10-16
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`firebase_dart` - `v1.2.2`](#firebase_dart---v122)
+ - [`firebase_dart_flutter` - `v1.1.9`](#firebase_dart_flutter---v119)
+ - [`firebase_dart_plus` - `v0.1.0+8`](#firebase_dart_plus---v0108)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `firebase_dart_plus` - `v0.1.0+8`
+
+---
+
+#### `firebase_dart` - `v1.2.2`
+
+ - **REFACTOR**: upgrade minimum sdk to 2.19.0. ([c943f005](https://github.com/appsup-dart/firebase_dart/commit/c943f005c5e444e845d4b64e38c28bca835211a6))
+ - **FIX**(database): upgrading of queries when no index. ([497cb098](https://github.com/appsup-dart/firebase_dart/commit/497cb09836a851382b4a911ce870c5306802e1a0))
+
+#### `firebase_dart_flutter` - `v1.1.9`
+
+ - **REFACTOR**: upgrade minimum sdk to 2.19.0. ([c943f005](https://github.com/appsup-dart/firebase_dart/commit/c943f005c5e444e845d4b64e38c28bca835211a6))
+
+
 ## 2023-11-02
 
 ### Changes

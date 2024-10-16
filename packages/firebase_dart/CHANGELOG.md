@@ -1,3 +1,8 @@
+## 1.2.2
+
+ - **REFACTOR**: upgrade minimum sdk to 2.19.0. ([c943f005](https://github.com/appsup-dart/firebase_dart/commit/c943f005c5e444e845d4b64e38c28bca835211a6))
+ - **FIX**(database): upgrading of queries when no index. ([497cb098](https://github.com/appsup-dart/firebase_dart/commit/497cb09836a851382b4a911ce870c5306802e1a0))
+
 ## 1.2.1
 
  - **REFACTOR**: support for rxdart ^0.28.0. ([c0be7a10](https://github.com/appsup-dart/firebase_dart/commit/c0be7a10579e26412fea8ecd73a32c378868e002))
