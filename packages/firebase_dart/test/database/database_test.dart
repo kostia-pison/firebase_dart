@@ -280,8 +280,10 @@ void testsWith(Map<String, dynamic> secrets, {required bool isolated}) {
     db1 = FirebaseDatabase(app: app1);
     db2 = FirebaseDatabase(app: app2);
     dbAlt1 = FirebaseDatabase(app: appAlt1);
-    if (Uri.parse(options.databaseURL!).scheme == 'mem') {
-      var backend = MemoryBackend.getInstance(ref.url.host);
+
+    var databaseUri = Uri.parse(options.databaseURL!);
+    if (databaseUri.scheme == 'mem') {
+      var backend = MemoryBackend.getInstance(databaseUri.host);
       backend.securityRules = {
         'test': {
           '.read': 'true',
