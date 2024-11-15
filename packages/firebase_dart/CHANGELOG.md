@@ -1,3 +1,7 @@
+## 1.2.3
+
+ - **PERF**(database): improve memory usage when many listen/unlistens. ([95981df5](https://github.com/appsup-dart/firebase_dart/commit/95981df5aec4ffb724d5f63d98cb4bd2823b8360))
+
 ## 1.2.2
 
  - **REFACTOR**: upgrade minimum sdk to 2.19.0. ([c943f005](https://github.com/appsup-dart/firebase_dart/commit/c943f005c5e444e845d4b64e38c28bca835211a6))

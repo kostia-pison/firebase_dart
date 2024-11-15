@@ -1,3 +1,7 @@
+## 1.1.10
+
+ - Update a dependency to the latest release.
+
 ## 1.1.9
 
  - **REFACTOR**: upgrade minimum sdk to 2.19.0. ([c943f005](https://github.com/appsup-dart/firebase_dart/commit/c943f005c5e444e845d4b64e38c28bca835211a6))
