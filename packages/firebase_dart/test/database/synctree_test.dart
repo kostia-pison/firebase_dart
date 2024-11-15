@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:firebase_dart/src/database/impl/data_observer.dart';
 import 'package:firebase_dart/src/database/impl/operations/tree.dart';
 import 'package:firebase_dart/src/database/impl/persistence/manager.dart';
 import 'package:firebase_dart/src/database/impl/query_spec.dart';
+import 'package:firebase_dart/src/database/impl/repo.dart';
 import 'package:firebase_dart/src/database/impl/synctree.dart';
 import 'package:firebase_dart/src/database/impl/tree.dart';
 import 'package:firebase_dart/src/database/impl/treestructureddata.dart';
@@ -156,6 +158,69 @@ void main() {
 
         expect(syncTree.obsoleteTreeStructuredDataInstanceCount, 0,
             skip: 'TODO improve reuse of instances');
+      });
+    });
+
+    group('delayed unlisten', () {
+      test('when keepQueriesSyncedDuration = 2 seconds', () {
+        fakeAsync((async) {
+          Repo.updateDatabaseConfiguration(
+              keepQueriesSyncedDuration: Duration(seconds: 2));
+          var logger = LoggingQueryRegistrar();
+
+          String? lastEvent;
+          logger.onEvent.listen((v) {
+            lastEvent = v;
+          });
+          var syncTree = SyncTree('mem:///', queryRegistrar: logger);
+
+          void listener(event) {}
+          syncTree.addEventListener(
+              'value', Name.parsePath('test'), QueryFilter(), listener);
+
+          async.elapse(Duration(milliseconds: 100));
+          expect(lastEvent, 'register');
+
+          syncTree.removeEventListener(
+              'value', Name.parsePath('test'), QueryFilter(), listener);
+          async.elapse(Duration(milliseconds: 100));
+          expect(lastEvent, 'register');
+
+          async.elapse(Duration(seconds: 2));
+          expect(lastEvent, 'unregister');
+        });
+      });
+
+      test('when keepQueriesSyncedDuration = 2 hours', () {
+        fakeAsync((async) {
+          Repo.updateDatabaseConfiguration(
+              keepQueriesSyncedDuration: Duration(hours: 2));
+          var logger = LoggingQueryRegistrar();
+
+          String? lastEvent;
+          logger.onEvent.listen((v) {
+            lastEvent = v;
+          });
+          var syncTree = SyncTree('mem:///', queryRegistrar: logger);
+
+          void listener(event) {}
+          syncTree.addEventListener(
+              'value', Name.parsePath('test'), QueryFilter(), listener);
+
+          async.elapse(Duration(milliseconds: 100));
+          expect(lastEvent, 'register');
+
+          syncTree.removeEventListener(
+              'value', Name.parsePath('test'), QueryFilter(), listener);
+          async.elapse(Duration(milliseconds: 100));
+          expect(lastEvent, 'register');
+
+          async.elapse(Duration(seconds: 2));
+          expect(lastEvent, 'register');
+
+          async.elapse(Duration(hours: 2));
+          expect(lastEvent, 'unregister');
+        });
       });
     });
   });

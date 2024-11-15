@@ -1,6 +1,7 @@
 // Copyright (c) 2016, Rik Bellens. All rights reserved. Use of this source code
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
+import 'package:clock/clock.dart';
 import 'package:firebase_dart/src/database/impl/data_observer.dart';
 
 import 'operations/tree.dart';
@@ -19,6 +20,10 @@ typedef EventListener = void Function(Event event);
 
 class EventTarget {
   final Map<String, Set<EventListener>> _eventRegistrations = {};
+
+  DateTime? _emptyListenersSince = clock.now();
+
+  DateTime? get emptyListenersSince => _emptyListenersSince;
 
   bool get hasEventRegistrations =>
       _eventRegistrations.values.any((v) => v.isNotEmpty);
@@ -49,6 +54,7 @@ class EventTarget {
     _eventRegistrations
         .putIfAbsent(type, () => <void Function(Event)>{})
         .add(listener);
+    _emptyListenersSince = null;
 
     var events = const TreeEventGenerator()
         .generateEvents(type, IncompleteData.empty(), _oldValue);
@@ -62,6 +68,9 @@ class EventTarget {
       _eventRegistrations
           .putIfAbsent(type, () => <void Function(Event)>{})
           .remove(listener);
+    }
+    if (!hasEventRegistrations) {
+      _emptyListenersSince = clock.now();
     }
   }
 }

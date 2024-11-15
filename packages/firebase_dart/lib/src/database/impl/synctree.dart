@@ -3,10 +3,12 @@
 
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:firebase_dart/database.dart' show FirebaseDatabaseException;
 import 'package:firebase_dart/src/database/impl/persistence/manager.dart';
 import 'package:firebase_dart/src/database/impl/query_spec.dart';
+import 'package:firebase_dart/src/database/impl/repo.dart';
 import 'package:firebase_dart/src/database/impl/utils.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
@@ -137,14 +139,34 @@ class MasterView {
   }
 
   /// Removes the event listener.
-  void removeEventListener(
+  ///
+  /// Returns true when this operation removed the last listener for the filter.
+  bool removeEventListener(
       String type, QueryFilter filter, EventListener listener) {
     var target = observers[filter];
-    if (target == null) return;
+    if (target == null) return false;
+    if (!target.hasEventRegistrations) return false;
     target.removeEventListener(type, listener);
-    if (!target.hasEventRegistrations) {
-      observers.remove(filter);
+    return !target.hasEventRegistrations;
+  }
+
+  /// Removes all observers that do not have any listeners since [from].
+  ///
+  /// Returns the new [DateTime] when the last listener was removed.
+  DateTime? pruneObservers(DateTime from) {
+    DateTime? next;
+    for (var e in observers.entries.toList()) {
+      var target = e.value;
+      var emptySince = target.emptyListenersSince;
+      if (emptySince == null) continue;
+
+      if (!emptySince.isAfter(from)) {
+        observers.remove(e.key);
+      } else if (next == null || emptySince.isBefore(next)) {
+        next = emptySince;
+      }
     }
+    return next;
   }
 
   /// Applies an operation.
@@ -403,12 +425,16 @@ class SyncPoint {
 
   /// Removes an event listener for events of [type] and for data filtered by
   /// [filter].
-  void removeEventListener(
+  ///
+  /// Returns true when this operation removed the last listener for the filter.
+  bool removeEventListener(
       String type, QueryFilter filter, EventListener listener) {
+    var isEmpty = false;
     for (var v in views.values) {
-      v.removeEventListener(type, filter, listener);
+      isEmpty = isEmpty || v.removeEventListener(type, filter, listener);
       if (v.observers.isEmpty) _prunable = true;
     }
+    return isEmpty;
   }
 
   /// Applies an operation to the view for [filter] at this [SyncPoint] or all
@@ -474,6 +500,22 @@ class SyncPoint {
       }
     }
     views.removeWhere((k, v) => v != masterView);
+  }
+
+  /// Removes all observers that do not have any listeners since [from].
+  ///
+  /// Returns the new [DateTime] when the last listener was removed.
+  DateTime? pruneObservers(DateTime from) {
+    DateTime? next;
+    for (var v in views.values) {
+      var emptySince = v.pruneObservers(from);
+      if (v.observers.isEmpty) _prunable = true;
+      if (emptySince == null) continue;
+      if (next == null || emptySince.isBefore(next)) {
+        next = emptySince;
+      }
+    }
+    return next;
   }
 }
 
@@ -792,13 +834,65 @@ class SyncTree {
   }
 
   final Set<Path<Name>> _invalidPaths = {};
+  final Map<Path<Name>, DateTime> _pathsWithEmptyObservers = {};
 
   DelayedCancellableFuture<void>? _handleInvalidPointsFuture;
+
+  Timer? _pruneObserversTimer;
+
+  void _pruneObservers() {
+    if (_pruneObserversTimer != null) {
+      _pruneObserversTimer!.cancel();
+      _pruneObserversTimer = null;
+    }
+    var next = pruneObservers(clock
+        .now()
+        .subtract(Repo.databaseConfiguration.keepQueriesSyncedDuration));
+    if (next != null) {
+      _pruneObserversTimer = Timer(
+          next
+              .add(Repo.databaseConfiguration.keepQueriesSyncedDuration)
+              .difference(clock.now()),
+          _pruneObservers);
+    }
+  }
 
   Future<void> waitForAllProcessed() async {
     while (_handleInvalidPointsFuture != null) {
       await _handleInvalidPointsFuture;
     }
+  }
+
+  /// Removes all observers that do not have any listeners since [from].
+  ///
+  /// Returns the new [DateTime] when the last listener was removed.
+  DateTime? pruneObservers(DateTime from) {
+    assert(!_isDestroyed);
+
+    DateTime? next;
+    for (var path in _pathsWithEmptyObservers.keys.toList()) {
+      var t = _pathsWithEmptyObservers[path]!;
+      if (t.isAfter(from)) {
+        if (next == null || t.isBefore(next)) {
+          next = t;
+        }
+        continue;
+      }
+
+      var node = root.subtree(path, _createNode);
+      var point = node.value;
+      var emptySince = point.pruneObservers(from);
+      if (emptySince == null) {
+        _pathsWithEmptyObservers.remove(path);
+      } else {
+        _pathsWithEmptyObservers[path] = emptySince;
+        if (next == null || emptySince.isBefore(next)) {
+          next = emptySince;
+        }
+      }
+      _invalidate(path);
+    }
+    return next;
   }
 
   void handleInvalidPaths() {
@@ -876,7 +970,11 @@ class SyncTree {
       QueryFilter filter, EventListener listener) {
     assert(!_isDestroyed);
     return _doOnSyncPoint(path, (point) {
-      point.removeEventListener(type, filter, listener);
+      var isEmpty = point.removeEventListener(type, filter, listener);
+      if (isEmpty) {
+        _pathsWithEmptyObservers[path] ??= clock.now();
+        _pruneObservers();
+      }
     });
   }
 
@@ -978,6 +1076,7 @@ class SyncTree {
   void destroy() {
     _isDestroyed = true;
     _handleInvalidPointsFuture?.cancel();
+    _pruneObserversTimer?.cancel();
     registrar.close();
     root.forEachNode((key, value) {
       for (var v in value.views.values) {

@@ -158,9 +158,6 @@ class Repo {
     await _connection.close();
     _syncTree.destroy();
     _infoSyncTree.destroy();
-    for (var v in _unlistenTimers) {
-      v.cancel();
-    }
     _repos.removeWhere((key, value) => value == this);
   }
 
@@ -268,8 +265,6 @@ class Repo {
     }
   }
 
-  final List<Timer> _unlistenTimers = [];
-
   /// Unlistens to changes of [type] at location [path] for data matching [filter].
   void unlisten(
       Path<Name> path, QueryFilter? filter, String type, EventListener cb) {
@@ -279,21 +274,7 @@ class Repo {
       _infoSyncTree.removeEventListener(
           type, path, filter ?? QueryFilter(), cb);
     } else {
-      void doUnlisten() {
-        _syncTree.removeEventListener(type, path, filter ?? QueryFilter(), cb);
-      }
-
-      if (databaseConfiguration.keepQueriesSyncedDuration > Duration.zero) {
-        Timer? self;
-        var timer = Timer(databaseConfiguration.keepQueriesSyncedDuration, () {
-          _unlistenTimers.remove(self);
-          doUnlisten();
-        });
-        self = timer;
-        _unlistenTimers.add(timer);
-      } else {
-        doUnlisten();
-      }
+      _syncTree.removeEventListener(type, path, filter ?? QueryFilter(), cb);
     }
   }
 
