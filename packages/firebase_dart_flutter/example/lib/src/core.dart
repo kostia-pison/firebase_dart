@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:firebase_dart/firebase_dart.dart';
@@ -6,16 +8,16 @@ import 'auth.dart';
 import 'database.dart';
 
 class AppListPage extends StatelessWidget {
-  final Stream<List<FirebaseOptions>> apps = (() async* {
+  static Stream<List<FirebaseOptions>> apps() async* {
     var box = await Hive.openBox('firebase_dart_flutter_example');
     List<FirebaseOptions> parseApps(List? v) =>
         (v ?? []).map((v) => FirebaseOptions.fromMap(v)).toList();
 
     yield parseApps(box.get('apps'));
     yield* box.watch(key: 'apps').map((e) => parseApps(e.value));
-  })();
+  }
 
-  AppListPage({Key? key}) : super(key: key);
+  const AppListPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,7 @@ class AppListPage extends StatelessWidget {
         },
       ),
       body: StreamBuilder<List<FirebaseOptions>>(
-        stream: apps,
+        stream: apps(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const CircularProgressIndicator();
@@ -46,9 +48,7 @@ class AppListPage extends StatelessWidget {
                     onTap: () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return AppPage(
-                          firebaseOptions: v,
-                        );
+                        return AppPage(projectId: v.projectId);
                       }));
                     })
             ],
@@ -73,7 +73,7 @@ class _NewAppDialogState extends State<NewAppDialog> {
     TextFormField(
       key: GlobalKey<FormFieldState>(),
       controller: TextEditingController(),
-      decoration: const InputDecoration(labelText: 'project id'),
+      decoration: const InputDecoration(labelText: 'Project ID'),
       autovalidateMode: AutovalidateMode.onUserInteraction,
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -227,88 +227,189 @@ class _NewAppDialogState extends State<NewAppDialog> {
   }
 }
 
-class AppPage extends StatelessWidget {
-  final FirebaseOptions firebaseOptions;
+class AppPage extends StatefulWidget {
+  final String projectId;
 
-  final Future<FirebaseApp> app;
+  const AppPage({Key? key, required this.projectId}) : super(key: key);
 
-  AppPage({Key? key, required this.firebaseOptions})
-      : app = _createApp(firebaseOptions),
-        super(key: key);
+  @override
+  State<AppPage> createState() => _AppPageState();
+}
 
-  static Future<FirebaseApp> _createApp(FirebaseOptions firebaseOptions) async {
-    try {
-      return Firebase.app(firebaseOptions.projectId);
-    } on FirebaseException {
-      return Firebase.initializeApp(
-          options: firebaseOptions, name: firebaseOptions.projectId);
-    }
+class _AppPageState extends State<AppPage> {
+  FirebaseApp? _app;
+
+  StreamSubscription? _subscription;
+  @override
+  void initState() {
+    _subscription = AppListPage.apps().listen((event) async {
+      var o = event.firstWhere((v) => v.projectId == widget.projectId);
+
+      try {
+        _app ??= Firebase.app(o.projectId);
+      } on FirebaseException {
+        // ignore
+      }
+
+      if (_app != null && _app!.options == o) {
+        return;
+      }
+
+      await _app?.delete();
+      _app = await Firebase.initializeApp(options: o, name: o.projectId);
+
+      if (_app != null) {
+        await FirebaseAuth.instanceFor(app: _app!)
+            .trySignInWithEmailLink(askUserForEmail: _askForEmail);
+      }
+
+      if (context.mounted) {
+        setState(() {});
+      }
+    });
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  Future<String?> _askForEmail() {
+    var email = TextEditingController();
+    return showDialog<String>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Please provide your email'),
+            content: Column(
+              children: [
+                TextFormField(
+                  controller: email,
+                )
+              ],
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                      MaterialLocalizations.of(context).cancelButtonLabel)),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(email.text);
+                  },
+                  child: Text(MaterialLocalizations.of(context).okButtonLabel)),
+            ],
+          );
+        });
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<FirebaseApp>(future: app.then((app) async {
-      await FirebaseAuth.instanceFor(app: app).trySignInWithEmailLink(
-          askUserForEmail: () async {
-        var email = TextEditingController();
-        return showDialog<String>(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('Please provide your email'),
-                content: Column(
-                  children: [
-                    TextFormField(
-                      controller: email,
-                    )
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text(
-                          MaterialLocalizations.of(context).cancelButtonLabel)),
-                  TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(email.text);
-                      },
-                      child: Text(
-                          MaterialLocalizations.of(context).okButtonLabel)),
-                ],
-              );
-            });
-      });
-      return app;
-    }), builder: (context, snapshot) {
-      if (!snapshot.hasData) {
-        return const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [CircularProgressIndicator()],
-        );
-      }
-      return DefaultTabController(
-          length: 3,
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text(firebaseOptions.projectId),
-              bottom: const TabBar(
-                tabs: [
-                  Text('auth'),
-                  Text('database'),
-                  Text('storage'),
-                ],
-              ),
-            ),
-            body: TabBarView(
-              children: [
-                AuthTab(app: snapshot.requireData),
-                DatabaseTab(app: snapshot.requireData),
-                const Text('storage'),
+    var app = _app;
+
+    if (app == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return DefaultTabController(
+        length: 4,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(widget.projectId),
+            bottom: const TabBar(
+              tabs: [
+                Text('settings'),
+                Text('auth'),
+                Text('database'),
+                Text('storage'),
               ],
             ),
-          ));
-    });
+          ),
+          body: TabBarView(
+            children: [
+              AppSettingsTab(app: app),
+              AuthTab(app: app),
+              DatabaseTab(app: app),
+              const Text('storage'),
+            ],
+          ),
+        ));
+  }
+}
+
+class AppSettingsTab extends StatelessWidget {
+  final FirebaseApp app;
+
+  const AppSettingsTab({Key? key, required this.app}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var options = app.options;
+    return ListView(
+      children: [
+        ListTile(
+            title: const Text('Project ID'), subtitle: Text(options.projectId)),
+        _buildTile(context, 'API key', 'apiKey'),
+        _buildTile(context, 'Database URL', 'databaseURL'),
+        _buildTile(context, 'App ID', 'appId'),
+        _buildTile(context, 'iOS client id', 'iosClientId'),
+      ],
+    );
+  }
+
+  Widget _buildTile(BuildContext context, String title, String property) {
+    var o = app.options.asMap;
+    return ListTile(
+        title: Text(title),
+        subtitle: Text(o[property] ?? ''),
+        onTap: () {
+          _showEditDialog(context, title: title, property: property);
+        });
+  }
+
+  void _showEditDialog(BuildContext context,
+      {required String title, required String property}) {
+    var o = app.options.asMap;
+    var c = TextEditingController(text: o[property]);
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(title),
+            content: TextField(controller: c),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                      MaterialLocalizations.of(context).cancelButtonLabel)),
+              TextButton(
+                  onPressed: () async {
+                    var box =
+                        await Hive.openBox('firebase_dart_flutter_example');
+                    var apps = box.get('apps') as List? ?? [];
+                    var index = apps.indexWhere(
+                        (v) => v['projectId'] == app.options.projectId);
+                    apps[index] = {
+                      ...o,
+                      property: c.text,
+                    };
+                    await box.put('apps', apps);
+
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child:
+                      Text(MaterialLocalizations.of(context).saveButtonLabel)),
+            ],
+          );
+        });
   }
 }
