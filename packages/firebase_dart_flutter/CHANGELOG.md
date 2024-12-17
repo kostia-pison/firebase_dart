@@ -1,3 +1,7 @@
+## 1.1.11
+
+ - **REFACTOR**(firebase_dart_flutter): remove dependency on uni_links. ([ab876896](https://github.com/appsup-dart/firebase_dart/commit/ab876896985cf5ac3db7af506aa71ffacb0d59d4))
+
 ## 1.1.10
 
  - Update a dependency to the latest release.
