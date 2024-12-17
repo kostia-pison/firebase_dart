@@ -6,12 +6,12 @@ import 'package:firebase_dart/core.dart';
 import 'package:firebase_dart/auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:platform_info/platform_info.dart' as platform_info;
 import 'package:logging/logging.dart';
-import 'package:uni_links/uni_links.dart';
 import 'package:flutter_apns_only/flutter_apns_only.dart';
 import 'package:crypto/crypto.dart';
 
@@ -100,6 +100,7 @@ class AppleAuthHandler extends DirectAuthHandler<OAuthProvider> {
 }
 
 class FlutterAuthHandler extends FirebaseAppAuthHandler {
+  final DeepLinkRetriever _deepLinkRetriever = DeepLinkRetriever.instance;
   Future<AuthCredential?>? _lastAuthResult;
 
   @override
@@ -108,7 +109,7 @@ class FlutterAuthHandler extends FirebaseAppAuthHandler {
       return _lastAuthResult ??= Future(() async {
         var v = await (platform_info.Platform.instance.android
             ? _getResult('getAuthResult')
-            : _getDeepLinkResult());
+            : _deepLinkRetriever.getDeepLinkResult());
         _lastAuthResult = null;
         return createCredential(
             sessionId: v['sessionId'],
@@ -137,26 +138,8 @@ Future<Map<String, dynamic>> _getResult(String type) async {
   return v;
 }
 
-Future<Map<String, String>> _getDeepLinkResult() async {
-  var uri = await uriLinkStream.first;
-  var v = uri!.queryParameters;
-
-  var deepLink = Uri.parse(v['deep_link_id']!);
-  v = deepLink.queryParameters;
-
-  Map<String, dynamic>? error =
-      v['firebaseError'] == null ? null : json.decode(v['firebaseError']!);
-  if (error != null) {
-    var code = error['code'];
-    if (code.startsWith('auth/')) {
-      code = code.substring('auth/'.length);
-    }
-    throw FirebaseAuthException(code, error['message']);
-  }
-  return v;
-}
-
 class FlutterApplicationVerifier extends BaseApplicationVerifier {
+  final DeepLinkRetriever _deepLinkRetriever = DeepLinkRetriever.instance;
   Future<String>? _lastRecaptchaResult;
 
   late final Future<bool> _isGooglePlayServicesAvailable = Future(() async {
@@ -176,7 +159,7 @@ class FlutterApplicationVerifier extends BaseApplicationVerifier {
       });
     } else if (!kIsWeb) {
       return _lastRecaptchaResult ??= Future(() async {
-        var v = await _getDeepLinkResult();
+        var v = await _deepLinkRetriever.getDeepLinkResult();
         _lastRecaptchaResult = null;
 
         return v['recaptchaToken']!;
@@ -275,5 +258,45 @@ class AndroidSmsRetriever extends SmsRetriever {
       });
     }
     return Future.value();
+  }
+}
+
+class DeepLinkRetriever with WidgetsBindingObserver {
+  final StreamController<Uri> _controller = StreamController.broadcast();
+
+  DeepLinkRetriever._() {
+    WidgetsFlutterBinding.ensureInitialized().addObserver(this);
+  }
+
+  static final DeepLinkRetriever instance = DeepLinkRetriever._();
+
+  @override
+  Future<bool> didPushRouteInformation(
+      RouteInformation routeInformation) async {
+    var uri = routeInformation.uri;
+
+    if (uri.host != 'firebaseauth') return false;
+    var deepLink = Uri.parse(uri.queryParameters['deep_link_id']!);
+
+    _controller.add(deepLink);
+
+    return true;
+  }
+
+  Future<Map<String, String>> getDeepLinkResult() async {
+    var deepLink = await _controller.stream.first;
+
+    var v = deepLink.queryParameters;
+
+    Map<String, dynamic>? error =
+        v['firebaseError'] == null ? null : json.decode(v['firebaseError']!);
+    if (error != null) {
+      var code = error['code'] as String;
+      if (code.startsWith('auth/')) {
+        code = code.substring('auth/'.length);
+      }
+      throw FirebaseAuthException(code, error['message']);
+    }
+    return v;
   }
 }
