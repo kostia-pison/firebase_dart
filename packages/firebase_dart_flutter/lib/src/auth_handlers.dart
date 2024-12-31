@@ -14,6 +14,7 @@ import 'package:platform_info/platform_info.dart' as platform_info;
 import 'package:logging/logging.dart';
 import 'package:flutter_apns_only/flutter_apns_only.dart';
 import 'package:crypto/crypto.dart';
+import 'package:app_links/app_links.dart';
 
 class FacebookAuthHandler extends DirectAuthHandler {
   FacebookAuthHandler() : super(FacebookAuthProvider.PROVIDER_ID);
@@ -265,7 +266,13 @@ class DeepLinkRetriever with WidgetsBindingObserver {
   final StreamController<Uri> _controller = StreamController.broadcast();
 
   DeepLinkRetriever._() {
-    WidgetsFlutterBinding.ensureInitialized().addObserver(this);
+    if (!kIsWeb && !platform_info.Platform.instance.mobile) {
+      AppLinks().uriLinkStream.listen((uri) {
+        didPushRouteInformation(RouteInformation(uri: uri));
+      });
+    } else {
+      WidgetsFlutterBinding.ensureInitialized().addObserver(this);
+    }
   }
 
   static final DeepLinkRetriever instance = DeepLinkRetriever._();
