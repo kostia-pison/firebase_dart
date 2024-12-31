@@ -25,6 +25,8 @@ class RecaptchaVerifierImpl implements RecaptchaVerifier {
 
   int? widgetId;
 
+  Element? _element;
+
   Completer<String>? _completer;
 
   RecaptchaVerifierImpl({
@@ -43,6 +45,7 @@ class RecaptchaVerifierImpl implements RecaptchaVerifier {
       grecaptcha.reset(widgetId!);
       widgetId = null;
       _completer = null;
+      _element?.remove();
     }
   }
 
@@ -55,7 +58,7 @@ class RecaptchaVerifierImpl implements RecaptchaVerifier {
           : document.getElementById(container!)!;
       var guaranteedEmpty = document.createElement('div')..id = 'recaptcha';
       element.children.add(guaranteedEmpty);
-      element = guaranteedEmpty;
+      _element = element = guaranteedEmpty;
 
       _completer = Completer();
 
