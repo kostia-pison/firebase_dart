@@ -1,3 +1,8 @@
+## 1.3.0
+
+ - **FEAT**: added ServerValue.increment server value. ([f63f56a2](https://github.com/appsup-dart/firebase_dart/commit/f63f56a28edffb71880cadc979e310fd0d68939b))
+ - **FEAT**: remove recaptcha logo after verification on web. ([6b491e92](https://github.com/appsup-dart/firebase_dart/commit/6b491e92a84f43ca8f9fe46f112041725cc33d11))
+
 ## 1.2.3
 
  - **PERF**(database): improve memory usage when many listen/unlistens. ([95981df5](https://github.com/appsup-dart/firebase_dart/commit/95981df5aec4ffb724d5f63d98cb4bd2823b8360))

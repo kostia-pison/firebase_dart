@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-01-01
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`firebase_dart` - `v1.3.0`](#firebase_dart---v130)
+ - [`firebase_dart_flutter` - `v1.1.12`](#firebase_dart_flutter---v1112)
+ - [`firebase_dart_plus` - `v0.1.0+10`](#firebase_dart_plus---v01010)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `firebase_dart_plus` - `v0.1.0+10`
+
+---
+
+#### `firebase_dart` - `v1.3.0`
+
+ - **FEAT**: added ServerValue.increment server value. ([f63f56a2](https://github.com/appsup-dart/firebase_dart/commit/f63f56a28edffb71880cadc979e310fd0d68939b))
+ - **FEAT**: remove recaptcha logo after verification on web. ([6b491e92](https://github.com/appsup-dart/firebase_dart/commit/6b491e92a84f43ca8f9fe46f112041725cc33d11))
+
+#### `firebase_dart_flutter` - `v1.1.12`
+
+ - **FIX**: handling recaptcha response on desktop. ([4237e9db](https://github.com/appsup-dart/firebase_dart/commit/4237e9db4045dc09072011bc917fcf3db6029f21))
+
+
 ## 2024-12-17
 
 ### Changes

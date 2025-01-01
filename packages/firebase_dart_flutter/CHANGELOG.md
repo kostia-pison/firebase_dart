@@ -1,3 +1,7 @@
+## 1.1.12
+
+ - **FIX**: handling recaptcha response on desktop. ([4237e9db](https://github.com/appsup-dart/firebase_dart/commit/4237e9db4045dc09072011bc917fcf3db6029f21))
+
 ## 1.1.11
 
  - **REFACTOR**(firebase_dart_flutter): remove dependency on uni_links. ([ab876896](https://github.com/appsup-dart/firebase_dart/commit/ab876896985cf5ac3db7af506aa71ffacb0d59d4))
