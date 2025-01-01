@@ -3,8 +3,14 @@
 
 part of firebase_dart;
 
-class ServerValue extends MapView<String, String> {
+class ServerValue extends MapView<String, dynamic> {
   static const ServerValue timestamp = ServerValue._({'.sv': 'timestamp'});
 
-  const ServerValue._(Map<String, String> map) : super(map);
+  /// Returns a placeholder value that can be used to atomically increment the
+  /// current database value by the provided delta.
+  static ServerValue increment(num delta) => ServerValue._({
+        '.sv': {'increment': delta}
+      });
+
+  const ServerValue._(Map<String, dynamic> map) : super(map);
 }

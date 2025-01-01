@@ -32,11 +32,12 @@ class SyncTreeBackend extends Backend {
         throw FirebaseDatabaseException.dataStale();
       }
     }
+    var existing = syncTree.valueForPathAndFilter(p, const QueryFilter());
     syncTree.applyServerOperation(
         TreeOperation.overwrite(
             p,
             ServerValueX.resolve(
-                TreeStructuredData.fromJson(value), serverValues)),
+                TreeStructuredData.fromJson(value), existing, serverValues)),
         null);
   }
 
@@ -51,7 +52,12 @@ class SyncTreeBackend extends Backend {
             children.map((k, v) => MapEntry(
                 Name.parsePath(k),
                 ServerValueX.resolve(
-                    TreeStructuredData.fromJson(v), serverValues)))),
+                    TreeStructuredData.fromJson(v),
+                    syncTree.valueForPathAndFilter(
+                        Path.from(
+                            [...Name.parsePath(path), ...Name.parsePath(k)]),
+                        const QueryFilter()),
+                    serverValues)))),
         null);
   }
 }

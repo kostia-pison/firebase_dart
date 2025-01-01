@@ -954,6 +954,13 @@ class SyncTree {
     return _handleInvalidPointsFuture!;
   }
 
+  TreeStructuredData valueForPathAndFilter(
+      Path<Name> path, QueryFilter filter) {
+    var node = root.subtree(path, _createNode);
+    var point = node.value;
+    return point.valueForFilter(filter);
+  }
+
   /// Adds an event listener for events of [type] and for data at [path] and
   /// filtered by [filter].
   Future<void> addEventListener(String type, Path<Name> path,

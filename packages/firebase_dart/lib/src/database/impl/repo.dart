@@ -200,8 +200,12 @@ class Repo {
 
     var newValue = TreeStructuredData.fromJson(value, priority);
     var writeId = _nextWriteId++;
-    _syncTree.applyUserOverwrite(path,
-        ServerValueX.resolve(newValue, _connection.serverValues), writeId);
+
+    var existing = _syncTree.valueForPathAndFilter(path, const QueryFilter());
+    _syncTree.applyUserOverwrite(
+        path,
+        ServerValueX.resolve(newValue, existing, _connection.serverValues),
+        writeId);
     _transactions.abort(path, FirebaseDatabaseException.overriddenBySet());
     try {
       await _connection.put(path.asString(), newValue.toJson(true));
@@ -226,8 +230,12 @@ class Repo {
       var serverValues = _connection.serverValues;
       var changedChildren = Map<Path<Name>, TreeStructuredData>.fromIterables(
           value.keys.map<Path<Name>>((c) => Name.parsePath(c)),
-          value.values.map<TreeStructuredData>((v) => ServerValueX.resolve(
-              TreeStructuredData.fromJson(v, null), serverValues)));
+          value.keys.map<TreeStructuredData>((k) => ServerValueX.resolve(
+              TreeStructuredData.fromJson(value[k], null),
+              _syncTree.valueForPathAndFilter(
+                  Path.from([...path, ...Name.parsePath(k)]),
+                  const QueryFilter()),
+              serverValues)));
       var writeId = _nextWriteId++;
       _syncTree.applyUserMerge(path, changedChildren, writeId);
       try {
@@ -345,8 +353,11 @@ class Repo {
     var sv = _connection.serverValues;
     _onDisconnect.forEachNode((path, snap) {
       if (snap == null) return;
+      var existing = _syncTree.valueForPathAndFilter(path, const QueryFilter());
       _syncTree.applyServerOperation(
-          TreeOperation.overwrite(path, ServerValueX.resolve(snap, sv)), null);
+          TreeOperation.overwrite(
+              path, ServerValueX.resolve(snap, existing, sv)),
+          null);
       _transactions.abort(path, FirebaseDatabaseException.overriddenBySet());
     });
     _onDisconnect.children.clear();

@@ -101,8 +101,8 @@ class Transaction implements Comparable<Transaction> {
     var newNode =
         TreeStructuredData.fromJson(data.value, currentState.priority);
     currentOutputSnapshotRaw = newNode;
-    currentOutputSnapshotResolved =
-        ServerValueX.resolve(newNode, repo._connection.serverValues);
+    currentOutputSnapshotResolved = ServerValueX.resolve(
+        newNode, currentState, repo._connection.serverValues);
 
     if (applyLocally) {
       repo._syncTree.applyUserOverwrite(
@@ -373,7 +373,9 @@ class TransactionsNode extends ModifiableTreeNode<Name, List<Transaction>> {
               .put(path.join('/'), output!.toJson(true), hash: latestHash);
           complete();
 
-          if (out == ServerValueX.resolve(out, repo._connection.serverValues)) {
+          if (out ==
+              ServerValueX.resolve(
+                  out, TreeStructuredData(), repo._connection.serverValues)) {
             // the confirmed value did not contain any server values, so we can reset the input to the confirmed value
             input = out;
           } else {

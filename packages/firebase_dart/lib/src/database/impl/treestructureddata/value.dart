@@ -4,20 +4,38 @@
 part of '../treestructureddata.dart';
 
 extension ServerValueX on ServerValue {
-  static const Map<String, ServerValue> values = {
-    'timestamp': ServerValue.timestamp
+  static final Map<String, ServerValue Function(dynamic)> factories = {
+    'timestamp': (v) => ServerValue.timestamp,
+    'increment': (v) => ServerValue.increment(v),
   };
 
-  static TreeStructuredData resolve(
-      TreeStructuredData value, Map<ServerValue, Value> serverValues) {
+  static TreeStructuredData resolve(TreeStructuredData value,
+      TreeStructuredData existing, Map<ServerValue, Value> serverValues) {
     if (value.isLeaf) {
-      return value.value!.value is ServerValue
-          ? TreeStructuredData.leaf(serverValues[value.value!.value]!)
-          : value;
+      var s = value.value!.value;
+      if (s is ServerValue) {
+        if (s['.sv'] is String) {
+          return TreeStructuredData.leaf(serverValues[s]!);
+        }
+        var op = s['.sv'] as Map;
+        if (op.keys.single == 'increment') {
+          var delta = op.values.single;
+          if (existing.isLeaf) {
+            var existingValue = existing.value!.value;
+            if (existingValue is num) {
+              return TreeStructuredData.leaf(Value.num(existingValue + delta));
+            }
+          }
+          return TreeStructuredData.leaf(Value.num(delta));
+        }
+        throw StateError('Invalid server value $s');
+      }
+      return value;
     }
 
     for (var k in value.children.keys.toList()) {
-      var newChild = resolve(value.children[k]!, serverValues);
+      var newChild = resolve(value.children[k]!,
+          existing.children[k] ?? TreeStructuredData._nill, serverValues);
       if (newChild != value.children[k]) {
         value = value.withChild(k, newChild);
       }
@@ -48,7 +66,10 @@ class Value implements Comparable<Value> {
 
   const Value.string(String value) : this._(value);
 
-  Value.server(String? type) : this._(ServerValueX.values[type!]);
+  Value.server(dynamic value)
+      : this._(ServerValueX.factories[
+                value is String ? value : (value as Map).keys.single]!(
+            value is String ? null : (value as Map).values.single));
 
   bool get isBool => value is bool;
 

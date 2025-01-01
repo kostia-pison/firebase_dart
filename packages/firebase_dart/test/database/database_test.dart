@@ -855,6 +855,58 @@ void testsWith(Map<String, dynamic> secrets, {required bool isolated}) {
   });
 
   group('ServerValue', () {
+    test('increment', () async {
+      var ref = db1.reference().child('test/server-values/increment');
+      await ref.set(1);
+
+      await ref.set(ServerValue.increment(1.5));
+
+      expect(await ref.get(), 2.5);
+
+      await ref.set(null);
+
+      await ref.set(ServerValue.increment(1.5));
+
+      expect(await ref.get(), 1.5);
+
+      await ref.set({'counter': ServerValue.increment(1)});
+
+      expect(await ref.get(), {'counter': 1});
+
+      await ref.set({
+        'counter': {
+          '.sv': {'increment': 1}
+        }
+      });
+
+      expect(await ref.get(), {'counter': 2});
+
+      await ref.runTransaction(
+          (v) => v..value['counter'] = ServerValue.increment(1));
+      expect(await ref.get(), {'counter': 3});
+
+      await ref.onDisconnect().set({'counter': ServerValue.increment(1)});
+
+      expect(await ref.get(), {'counter': 3});
+
+      await ref.database.goOffline();
+
+      expect(await ref.get(), {'counter': 4});
+
+      await ref.database.goOnline();
+
+      expect(await ref.get(), {'counter': 4});
+
+      await ref.update({
+        'counter/first': {
+          '.sv': {'increment': 1}
+        },
+      });
+      expect(await ref.get(), {
+        'counter': {'first': 1}
+      });
+    });
+
     test('timestamp', () async {
       var ref = db1.reference().child('test/server-values/timestamp');
       await ref.set(null);
