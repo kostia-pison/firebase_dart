@@ -262,6 +262,9 @@ class MessageBody {
     if (status != null) json['s'] = status;
     return json;
   }
+
+  @override
+  String toString() => 'MessageBody[${toJson()}]';
 }
 
 /// A message to control the connection
