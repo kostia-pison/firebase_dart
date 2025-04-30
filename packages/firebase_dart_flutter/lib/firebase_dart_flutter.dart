@@ -18,7 +18,6 @@ class FirebaseDartFlutter {
     bool isolated = !kIsWeb,
   }) async {
     isolated = isolated && !kIsWeb;
-    WidgetsFlutterBinding.ensureInitialized();
 
     String? path;
     if (!kIsWeb) {
