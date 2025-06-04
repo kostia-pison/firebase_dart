@@ -1,7 +1,7 @@
 @JS()
 library grecaptcha;
 
-import 'dart:js_interop';
+import 'package:js/js.dart';
 
 @JS()
 @anonymous
