@@ -3,9 +3,9 @@
 @JS('gapi.iframes')
 library gapi.iframes;
 
-import 'dart:html';
+import 'dart:js_interop';
 
-import 'package:js/js.dart';
+import 'package:web/web.dart';
 
 @JS()
 external Context getContext();
@@ -35,9 +35,9 @@ abstract class Context {
 @JS()
 @anonymous
 abstract class IframeAttributes {
-  external CssStyleDeclaration? style;
+  external CSSStyleDeclaration? style;
 
-  external factory IframeAttributes({CssStyleDeclaration? style});
+  external factory IframeAttributes({CSSStyleDeclaration? style});
 }
 
 @JS()
@@ -99,14 +99,14 @@ abstract class IframeError {
 @anonymous
 abstract class IframeOptions {
   external String get url;
-  external HtmlElement? get where;
+  external HTMLElement? get where;
   external IframeAttributes? get attributes;
   external IframesFilter? messageHandlersFilter;
   external bool? dontclear;
 
   external factory IframeOptions(
       {String url,
-      HtmlElement? where,
+      HTMLElement? where,
       IframeAttributes? attributes,
       IframesFilter? messageHandlersFilter,
       bool? dontclear});

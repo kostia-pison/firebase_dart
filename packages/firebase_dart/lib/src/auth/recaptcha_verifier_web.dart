@@ -1,8 +1,9 @@
 import 'dart:async';
-import 'dart:html';
-import 'dart:js';
-import 'dart:js_util';
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'dart:math';
+
+import 'package:web/web.dart';
 
 import 'auth.dart';
 import 'grecaptcha.dart';
@@ -67,21 +68,21 @@ class RecaptchaVerifierImpl implements RecaptchaVerifier {
       newWidgetId = grecaptcha.render(
           element,
           GRecaptchaParameters(
-              callback: allowInterop((v) {
+              callback: (v) {
                 if (newWidgetId != widgetId) return;
                 if (onSuccess != null) onSuccess!();
                 _completer!.complete(v);
-              }),
-              errorCallback: allowInterop((error) {
+              },
+              errorCallback: (error) {
                 var e = FirebaseAuthException('recaptcha-error', '$error');
                 if (onError != null) onError!(e);
                 _completer!.completeError(e);
-              }),
-              expiredCallback: allowInterop(() {
+              },
+              expiredCallback: () {
                 if (onExpired != null) onExpired!();
                 _completer!
                     .completeError(FirebaseAuthException('recaptcha-expired'));
-              }),
+              },
               size: container == null ? 'invisible' : size.name,
               theme: theme.name,
               sitekey: await (auth as FirebaseAuthImpl)
@@ -138,7 +139,7 @@ class RecaptchaLoader {
     var r = Random();
 
     var name = '_gonload${r.nextInt(1000000)}';
-    var script = ScriptElement()
+    var script = HTMLScriptElement()
       ..src = Uri.parse('https://www.google.com/recaptcha/api.js')
           .replace(queryParameters: {
         'render': 'explicit',
@@ -147,9 +148,12 @@ class RecaptchaLoader {
       }).toString()
       ..async = true;
 
-    setProperty(window, name, allowInterop((_) {
-      completer.complete();
-    }));
+    window.setProperty(
+      name.toJS,
+      (_) {
+        completer.complete();
+      }.toJSBox,
+    );
 
     document.body!.append(script);
 
