@@ -15,6 +15,8 @@ class FirebaseDartFlutter {
 
   static Future<void> setup({
     bool isolated = !kIsWeb,
+    bool includeAuthHandlers = true,
+    bool includeApplicationVerifier = true,
   }) async {
     isolated = isolated && !kIsWeb;
 
@@ -35,13 +37,17 @@ class FirebaseDartFlutter {
             : (url, {bool popup = false}) async {
                 await launchUrl(url, mode: LaunchMode.externalApplication);
               },
-        authHandler: AuthHandler.from([
-          GoogleAuthHandler(),
-          AppleAuthHandler(),
-          FlutterAuthHandler(),
-          const AuthHandler(),
-        ]),
-        applicationVerifier: kIsWeb ? null : FlutterApplicationVerifier(),
+        authHandler: includeAuthHandlers
+            ? AuthHandler.from([
+                GoogleAuthHandler(),
+                AppleAuthHandler(),
+                FlutterAuthHandler(),
+                const AuthHandler(),
+              ])
+            : null,
+        applicationVerifier: kIsWeb || !includeApplicationVerifier
+            ? null
+            : FlutterApplicationVerifier(),
         smsRetriever: AndroidSmsRetriever(),
         platform: await _getPlatform());
   }
