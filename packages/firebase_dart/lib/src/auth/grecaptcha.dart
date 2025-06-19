@@ -12,9 +12,11 @@ class GRecaptcha {
   ///
   /// [container] is the HTML element to render the reCAPTCHA widget.
   /// Specify either the ID of the container (string) or the DOM element itself.
+  @staticInterop
   external int render(dynamic container, GRecaptchaParameters options);
 
   /// Gets the response for the reCAPTCHA widget.
+  @staticInterop
   external String getResponse([int widgetId]);
 
   /// Programmatically invoke the reCAPTCHA check. Used if the invisible
@@ -22,12 +24,14 @@ class GRecaptcha {
   ///
   /// [widgetId] is optional and defaults to the first widget created if
   /// unspecified.
+  @staticInterop
   external void execute([int widgetId]);
 
   /// Resets the reCAPTCHA widget.
   ///
   /// [widgetId] is optional and defaults to the first widget created if
   /// unspecified.
+  @staticInterop
   external void reset([int widgetId]);
 }
 
@@ -40,38 +44,45 @@ external GRecaptcha get grecaptcha;
 @staticInterop
 class GRecaptchaParameters {
   /// The sitekey of your reCAPTCHA site.
+  @staticInterop
   external String get sitekey;
 
   /// Reposition the reCAPTCHA badge. 'inline' lets you position it with CSS.
   ///
   /// Accepted values are: 'bottomright' (default), 'bottomleft', 'inline'.
+  @staticInterop
   external String? get badge;
 
   /// The color theme of the widget.
   ///
   /// Accepted values are: 'dark', 'light' (default).
+  @staticInterop
   external String? get theme;
 
   /// The size of the widget.
   ///
   /// Accepted values are: 'normal' (default), 'compact', 'invisible'.
+  @staticInterop
   external String? get size;
 
   /// The tabindex of the widget and challenge.
   ///
   /// If other elements in your page use tabindex, it should be set to make user
   /// navigation easier.
+  @staticInterop
   external int? get tabindex;
 
   /// The callback function, executed when the user submits a successful
   /// response.
   ///
   /// The g-recaptcha-response token is passed to your callback.
+  @staticInterop
   external TokenCallback? callback;
 
   /// The callback function, executed when the reCAPTCHA response expires and
   /// the user needs to re-verify.
   @JS('expired-callback')
+  @staticInterop
   external Function()? expiredCallback;
 
   /// The callback function, executed when reCAPTCHA encounters an error
@@ -81,8 +92,10 @@ class GRecaptchaParameters {
   /// If you specify a function here, you are responsible for informing the user
   /// that they should retry.
   @JS('error-callback')
+  @staticInterop
   external Function(Object)? errorCallback;
 
+  @staticInterop
   external factory GRecaptchaParameters({
     required String sitekey,
     String? badge,
