@@ -3,9 +3,10 @@ library grecaptcha;
 
 import 'dart:js_interop';
 
-@JS()
-@anonymous
+@JS('grecaptcha')
 @staticInterop
+external GRecaptcha get grecaptcha;
+
 class GRecaptcha {}
 
 extension GRecaptchaExtension on GRecaptcha {
@@ -33,14 +34,21 @@ extension GRecaptchaExtension on GRecaptcha {
   external void reset([int? widgetId]);
 }
 
-@JS('grecaptcha')
-@staticInterop
-external GRecaptcha get grecaptcha;
-
 @JS()
 @anonymous
 @staticInterop
-class GRecaptchaParameters {}
+class GRecaptchaParameters {
+  external factory GRecaptchaParameters({
+    String? sitekey,
+    String? badge,
+    String? theme,
+    String? size,
+    int? tabindex,
+    JSFunction? callback,
+    @JS('expired-callback') JSFunction? expiredCallback,
+    @JS('error-callback') JSFunction? errorCallback,
+  });
+}
 
 extension GRecaptchaParametersExtension on GRecaptchaParameters {
   /// The sitekey of your reCAPTCHA site.
@@ -98,20 +106,27 @@ extension GRecaptchaParametersExtension on GRecaptchaParameters {
   external set errorCallback(JSFunction? value);
 }
 
-// Factory constructor for creating GRecaptchaParameters
-@JS()
-@anonymous
-@staticInterop
-external GRecaptchaParameters createGRecaptchaParameters({
+GRecaptchaParameters createGRecaptchaParameters({
   String? sitekey,
   String? badge,
   String? theme,
   String? size,
   int? tabindex,
   JSFunction? callback,
-  @JS('expired-callback') JSFunction? expiredCallback,
-  @JS('error-callback') JSFunction? errorCallback,
-});
+  JSFunction? expiredCallback,
+  JSFunction? errorCallback,
+}) {
+  return GRecaptchaParameters(
+    sitekey: sitekey,
+    badge: badge,
+    theme: theme,
+    size: size,
+    tabindex: tabindex,
+    callback: callback,
+    expiredCallback: expiredCallback,
+    errorCallback: errorCallback,
+  );
+}
 
 // Type definitions for better type safety
 typedef TokenCallback = void Function(String token);
