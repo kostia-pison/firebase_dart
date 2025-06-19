@@ -5,6 +5,7 @@ import 'dart:js_interop';
 
 @JS()
 @anonymous
+@staticInterop
 class GRecaptcha {
   /// Renders the container as a reCAPTCHA widget and returns the ID of the
   /// newly created widget..
@@ -31,10 +32,12 @@ class GRecaptcha {
 }
 
 @JS('grecaptcha')
+@staticInterop
 external GRecaptcha get grecaptcha;
 
 @JS()
 @anonymous
+@staticInterop
 class GRecaptchaParameters {
   /// The sitekey of your reCAPTCHA site.
   external String get sitekey;

@@ -8,9 +8,11 @@ import 'dart:js_interop';
 import 'package:web/web.dart';
 
 @JS()
+@staticInterop
 external Context getContext();
 
 @JS()
+@staticInterop
 class Iframe {
   external IThenable ping();
 
@@ -26,6 +28,7 @@ class Iframe {
 
 @JS()
 @anonymous
+@staticInterop
 abstract class Context {
   external void openChild(IframeOptions options);
 
@@ -34,6 +37,7 @@ abstract class Context {
 
 @JS()
 @anonymous
+@staticInterop
 abstract class IframeAttributes {
   external CSSStyleDeclaration? style;
 
@@ -42,6 +46,7 @@ abstract class IframeAttributes {
 
 @JS()
 @anonymous
+@staticInterop
 abstract class IframeRestyleOptions {
   external bool? setHideOnLeave;
 
@@ -50,6 +55,7 @@ abstract class IframeRestyleOptions {
 
 @JS()
 @anonymous
+@staticInterop
 abstract class IframeEvent {
   external String type;
 
@@ -58,6 +64,7 @@ abstract class IframeEvent {
 
 @JS()
 @anonymous
+@staticInterop
 abstract class IframeEventHandlerResponse {
   external String status;
 
@@ -69,6 +76,7 @@ typedef IframeEventHandler = IframeEventHandlerResponse Function(
 
 @JS()
 @anonymous
+@staticInterop
 abstract class IframeAuthEvent {
   external String? eventId;
 
@@ -89,6 +97,7 @@ abstract class IframeAuthEvent {
 
 @JS()
 @anonymous
+@staticInterop
 abstract class IframeError {
   external String code;
 
@@ -97,6 +106,7 @@ abstract class IframeError {
 
 @JS()
 @anonymous
+@staticInterop
 abstract class IframeOptions {
   external String get url;
   external HTMLElement? get where;
@@ -104,22 +114,26 @@ abstract class IframeOptions {
   external IframesFilter? messageHandlersFilter;
   external bool? dontclear;
 
-  external factory IframeOptions(
-      {String url,
-      HTMLElement? where,
-      IframeAttributes? attributes,
-      IframesFilter? messageHandlersFilter,
-      bool? dontclear});
+  external factory IframeOptions({
+    String url,
+    HTMLElement? where,
+    IframeAttributes? attributes,
+    IframesFilter? messageHandlersFilter,
+    bool? dontclear,
+  });
 }
 
 @JS()
 @anonymous
+@staticInterop
 abstract class IThenable {
   external void then(Function callback, Function onError);
 }
 
 @JS()
+@staticInterop
 external IframesFilter get CROSS_ORIGIN_IFRAMES_FILTER;
 
 @JS()
+@staticInterop
 abstract class IframesFilter {}
