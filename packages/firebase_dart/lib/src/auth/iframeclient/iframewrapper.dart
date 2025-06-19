@@ -80,6 +80,21 @@ class IframeWrapper {
     return _onIframeOpen.then((_) {
       var completer = Completer<Map<String, dynamic>?>();
 
+      // Create a JS-compatible callback function
+      void jsCallback(JSAny? response) {
+        try {
+          if (response != null) {
+            // Convert JSAny to Map<String, dynamic>
+            final dartMap = _convertJSObjectToDartMap(response);
+            completer.complete(dartMap);
+          } else {
+            completer.complete(null);
+          }
+        } catch (e) {
+          completer.completeError(e);
+        }
+      }
+
       _iframe.send(
         message.type,
         (() {
@@ -87,11 +102,22 @@ class IframeWrapper {
           obj.setProperty('type'.toJS, message.type.toJS);
           return obj;
         })(),
-        completer.complete.toJS,
+        jsCallback.toJS, // This is now JS-compatible
         gapi.CROSS_ORIGIN_IFRAMES_FILTER,
       );
+
       return completer.future;
     });
+  }
+
+  /// Converts JS object to Dart Map.
+  Map<String, dynamic>? _convertJSObjectToDartMap(JSAny jsObject) {
+    if (jsObject.isNull || jsObject.isUndefined) {
+      return null;
+    }
+
+    // Convert JS object to Dart Map
+    return (jsObject as JSObject).dartify() as Map<String, dynamic>?;
   }
 
   final Expando<JSFunction> _handlers = Expando();
