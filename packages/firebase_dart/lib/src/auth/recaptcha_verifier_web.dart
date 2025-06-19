@@ -66,28 +66,29 @@ class RecaptchaVerifierImpl implements RecaptchaVerifier {
       int? newWidgetId;
 
       newWidgetId = grecaptcha.render(
-          element,
-          GRecaptchaParameters(
-              callback: (v) {
-                if (newWidgetId != widgetId) return;
-                if (onSuccess != null) onSuccess!();
-                _completer!.complete(v);
-              },
-              errorCallback: (error) {
-                var e = FirebaseAuthException('recaptcha-error', '$error');
-                if (onError != null) onError!(e);
-                _completer!.completeError(e);
-              },
-              expiredCallback: () {
-                if (onExpired != null) onExpired!();
-                _completer!
-                    .completeError(FirebaseAuthException('recaptcha-expired'));
-              },
-              size: container == null ? 'invisible' : size.name,
-              theme: theme.name,
-              sitekey: await (auth as FirebaseAuthImpl)
-                  .rpcHandler
-                  .getRecaptchaSiteKey()));
+        element,
+        createGRecaptchaParameters(
+          callback: tokenCallbackToJS((v) {
+            if (newWidgetId != widgetId) return;
+            if (onSuccess != null) onSuccess!();
+            _completer!.complete(v);
+          }),
+          errorCallback: errorCallbackToJS((error) {
+            var e = FirebaseAuthException('recaptcha-error', '$error');
+            if (onError != null) onError!(e);
+            _completer!.completeError(e);
+          }),
+          expiredCallback: voidCallbackToJS(() {
+            if (onExpired != null) onExpired!();
+            _completer!
+                .completeError(FirebaseAuthException('recaptcha-expired'));
+          }),
+          size: container == null ? 'invisible' : size.name,
+          theme: theme.name,
+          sitekey:
+              await (auth as FirebaseAuthImpl).rpcHandler.getRecaptchaSiteKey(),
+        ),
+      );
       widgetId = newWidgetId;
     }
 
@@ -150,9 +151,9 @@ class RecaptchaLoader {
 
     window.setProperty(
       name.toJS,
-      (_) {
+      (JSAny _) {
         completer.complete();
-      }.toJSBox,
+      }.toJS,
     );
 
     document.body!.append(script);

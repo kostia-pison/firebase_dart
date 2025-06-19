@@ -39,36 +39,39 @@ class IframeWrapper {
       var container = HTMLDivElement();
       document.body!.append(container);
       gapi.getContext().open(
-        gapi.IframeOptions(
-          where: container,
-          url: url,
-          messageHandlersFilter: gapi.CROSS_ORIGIN_IFRAMES_FILTER,
-          attributes: gapi.IframeAttributes(
-            style: document.body!.style
-              ..position = 'absolute'
-              ..top = '-100px'
-              ..width = '1px'
-              ..height = '1px',
-          ),
-          dontclear: true,
-        ),
-        (iframe) {
-          _iframe = iframe;
-          _iframe.restyle(gapi.IframeRestyleOptions(
-              // Prevent iframe from closing on mouse out.
-              setHideOnLeave: false));
+            createIframeOptions(
+              where: container,
+              url: url,
+              messageHandlersFilter: gapi.CROSS_ORIGIN_IFRAMES_FILTER,
+              attributes: createIframeAttributes(
+                style: document.body!.style
+                  ..position = 'absolute'
+                  ..top = '-100px'
+                  ..width = '1px'
+                  ..height = '1px',
+              ),
+              dontclear: true,
+            ),
+            ((gapi.Iframe iframe) {
+              _iframe = iframe;
+              _iframe.restyle(
+                createIframeRestyleOptions(
+                  // Prevent iframe from closing on mouse out.
+                  setHideOnLeave: false,
+                ),
+              );
 
-          // This returns an IThenable. However the reject part does not call
-          // when the iframe is not loaded.
-          promiseToFuture(iframe.ping())
-              // Confirm iframe is correctly loaded.
-              // To fallback on failure, set a timeout.
-              .timeout(PING_TIMEOUT_.get())
-              .then((_) => completer.complete(), onError: (error) {
-            completer.completeError(Exception('Network Error'));
-          });
-        },
-      );
+              // This returns an IThenable. However the reject part does not call
+              // when the iframe is not loaded.
+              promiseToFuture(iframe.ping())
+                  // Confirm iframe is correctly loaded.
+                  // To fallback on failure, set a timeout.
+                  .timeout(PING_TIMEOUT_.get())
+                  .then((_) => completer.complete(), onError: (error) {
+                completer.completeError(Exception('Network Error'));
+              });
+            }).toJS,
+          );
       return completer.future.then((_) => print('completed'));
     });
   }
@@ -77,24 +80,34 @@ class IframeWrapper {
     return _onIframeOpen.then((_) {
       var completer = Completer<Map<String, dynamic>?>();
 
-      _iframe.send(message.type, message, completer.complete,
-          gapi.CROSS_ORIGIN_IFRAMES_FILTER);
+      _iframe.send(
+        message.type,
+        (() {
+          final obj = JSObject();
+          obj.setProperty('type'.toJS, message.type.toJS);
+          return obj;
+        })(),
+        completer.complete.toJS,
+        gapi.CROSS_ORIGIN_IFRAMES_FILTER,
+      );
       return completer.future;
     });
   }
+
+  final Expando<JSFunction> _handlers = Expando();
 
   /// Registers a listener to a post message.
   void registerEvent(String eventName,
       IframeEventHandlerResponse Function(IframeEvent) handler) {
     _onIframeOpen.then((_) {
-      var h = _handlers[handler] ??= (event, iframe) {
-        return handler(event);
-      };
+      var h = _handlers[handler] ??= ((JSAny event, JSAny iframe) {
+        // Convert JS objects back to Dart types
+        final dartEvent = event as IframeEvent;
+        return handler(dartEvent);
+      }).toJS;
       _iframe.register(eventName, h, gapi.CROSS_ORIGIN_IFRAMES_FILTER);
     });
   }
-
-  final Expando<IframeEventHandler> _handlers = Expando();
 
   /// Unregisters a listener to a post message.
   void unregisterEvent(String eventName, Function(dynamic) handler) {
@@ -168,18 +181,18 @@ class IframeWrapper {
         // timeout.
         var cbName = '__iframefcb${_random.nextInt(1000000)}';
         // GApi loader not available, dynamically load platform.js.
-        getContext().toJSBox.setProperty(
-              cbName.toJS,
-              () {
-                // GApi loader should be ready.
-                if (util.getObjectRef('gapi.load') != null) {
-                  onGapiLoad();
-                } else {
-                  // Gapi loader failed, throw error.
-                  completer.completeError(Exception('Network Error'));
-                }
-              }.toJSBox,
-            );
+        util.globalThis.setProperty(
+          cbName.toJS,
+          () {
+            // GApi loader should be ready.
+            if (util.getObjectRef('gapi.load') != null) {
+              onGapiLoad();
+            } else {
+              // Gapi loader failed, throw error.
+              completer.completeError(Exception('Network Error'));
+            }
+          }.toJS,
+        );
         // Build GApi loader.
         var url = Uri.parse(IframeWrapper.GAPI_LOADER_SRC_)
             .replace(queryParameters: {'onload': cbName});
