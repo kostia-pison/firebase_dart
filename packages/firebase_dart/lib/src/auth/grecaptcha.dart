@@ -3,10 +3,9 @@ library grecaptcha;
 
 import 'dart:js_interop';
 
-@JS('grecaptcha')
+@JS()
+@anonymous
 @staticInterop
-external GRecaptcha get grecaptcha;
-
 class GRecaptcha {}
 
 extension GRecaptchaExtension on GRecaptcha {
@@ -33,6 +32,10 @@ extension GRecaptchaExtension on GRecaptcha {
   /// unspecified.
   external void reset([int? widgetId]);
 }
+
+@JS('grecaptcha')
+@staticInterop
+external GRecaptcha get grecaptcha;
 
 @JS()
 @anonymous
