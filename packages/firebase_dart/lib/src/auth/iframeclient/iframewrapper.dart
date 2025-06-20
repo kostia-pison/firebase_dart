@@ -40,26 +40,22 @@ class IframeWrapper {
       document.body!.append(container);
       gapi.getContext().open(
             createIframeOptions(
-              where: container,
-              url: url,
-              messageHandlersFilter: gapi.CROSS_ORIGIN_IFRAMES_FILTER,
-              attributes: createIframeAttributes(
-                style: document.body!.style
+              url,
+              container,
+              createIframeAttributes(
+                document.body!.style
                   ..position = 'absolute'
                   ..top = '-100px'
                   ..width = '1px'
                   ..height = '1px',
               ),
-              dontclear: true,
+              gapi.CROSS_ORIGIN_IFRAMES_FILTER,
+              true,
             ),
             ((gapi.Iframe iframe) {
               _iframe = iframe;
-              _iframe.restyle(
-                createIframeRestyleOptions(
-                  // Prevent iframe from closing on mouse out.
-                  setHideOnLeave: false,
-                ),
-              );
+              // Prevent iframe from closing on mouse out.
+              _iframe.restyle(createIframeRestyleOptions(false));
 
               // This returns an IThenable. However the reject part does not call
               // when the iframe is not loaded.

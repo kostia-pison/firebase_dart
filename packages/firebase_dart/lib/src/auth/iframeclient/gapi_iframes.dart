@@ -154,27 +154,31 @@ abstract class IframesFilter {}
 @JS()
 @anonymous
 @staticInterop
-external IframeAttributes createIframeAttributes({CSSStyleDeclaration? style});
+external IframeAttributes createIframeAttributes(
+  CSSStyleDeclaration? style,
+);
 
 @JS()
 @anonymous
 @staticInterop
 external IframeRestyleOptions createIframeRestyleOptions(
-    {bool? setHideOnLeave});
+  bool? setHideOnLeave,
+);
 
 @JS()
 @anonymous
 @staticInterop
 external IframeEventHandlerResponse createIframeEventHandlerResponse(
-    {String? status});
+  String? status,
+);
 
 @JS()
 @anonymous
 @staticInterop
-external IframeOptions createIframeOptions({
+external IframeOptions createIframeOptions(
   String? url,
   HTMLElement? where,
   IframeAttributes? attributes,
   IframesFilter? messageHandlersFilter,
   bool? dontclear,
-});
+);

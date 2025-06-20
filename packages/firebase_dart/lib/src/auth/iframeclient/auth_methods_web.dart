@@ -157,12 +157,10 @@ class IfcHandler {
           isHandled = _authEventListeners[i](authEvent) || isHandled;
         }
         // Return ack response to notify sender of success.
-        return createIframeEventHandlerResponse(
-          status: isHandled ? 'ACK' : 'ERROR',
-        );
+        return createIframeEventHandlerResponse(isHandled ? 'ACK' : 'ERROR');
       }
       // Return error status if the response is invalid.
-      return createIframeEventHandlerResponse(status: 'ERROR');
+      return createIframeEventHandlerResponse('ERROR');
     });
   }
 }
