@@ -8,16 +8,26 @@ external void load(String libraries, LoadConfig config);
 
 @JS()
 @anonymous
-abstract class LoadConfig {
+@staticInterop
+class LoadConfig {
   external factory LoadConfig({
-    Function callback,
-    Function onerror,
-    num timeout,
-    Function ontimeout,
+    JSFunction? callback,
+    JSFunction? onerror,
+    num? timeout,
+    JSFunction? ontimeout,
   });
+}
 
-  external Function get callback;
-  external Function get onerror;
-  external num get timeout;
-  external Function get ontimeout;
+extension LoadConfigExtension on LoadConfig {
+  external JSFunction? get callback;
+  external set callback(JSFunction? value);
+
+  external JSFunction? get onerror;
+  external set onerror(JSFunction? value);
+
+  external num? get timeout;
+  external set timeout(num? value);
+
+  external JSFunction? get ontimeout;
+  external set ontimeout(JSFunction? value);
 }
