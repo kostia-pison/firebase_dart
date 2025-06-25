@@ -4,7 +4,6 @@
 library iframewrapper;
 
 import 'dart:async';
-import 'dart:html_common';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'dart:math';
@@ -57,15 +56,22 @@ class IframeWrapper {
               // Prevent iframe from closing on mouse out.
               _iframe.restyle(createIframeRestyleOptions(false));
 
-              // This returns an IThenable. However the reject part does not call
-              // when the iframe is not loaded.
-              promiseToFuture(iframe.ping())
-                  // Confirm iframe is correctly loaded.
-                  // To fallback on failure, set a timeout.
-                  .timeout(PING_TIMEOUT_.get())
-                  .then((_) => completer.complete(), onError: (error) {
+              // Set up timeout timer
+              final timeoutTimer = Timer(PING_TIMEOUT_.get(), () {
                 completer.completeError(Exception('Network Error'));
               });
+
+              // Handle the IThenable directly
+              iframe.ping().then(
+                    ((_) {
+                      timeoutTimer.cancel();
+                      completer.complete();
+                    }).toJS,
+                    ((error) {
+                      timeoutTimer.cancel();
+                      completer.completeError(Exception('Network Error'));
+                    }).toJS,
+                  );
             }).toJS,
           );
       return completer.future.then((_) => print('completed'));
