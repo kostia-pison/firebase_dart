@@ -66,10 +66,12 @@ class IframeWrapper {
                     ((dynamic _) {
                       timeoutTimer.cancel();
                       completer.complete();
+                      return; // Explicit void return
                     }).toJS,
                     ((dynamic error) {
                       timeoutTimer.cancel();
                       completer.completeError(Exception('Network Error'));
+                      return; // Explicit void return
                     }).toJS,
                   );
             }).toJS,
