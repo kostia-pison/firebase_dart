@@ -63,11 +63,11 @@ class IframeWrapper {
 
               // Handle the IThenable directly
               iframe.ping().then(
-                    ((_) {
+                    ((dynamic _) {
                       timeoutTimer.cancel();
                       completer.complete();
                     }).toJS,
-                    ((error) {
+                    ((dynamic error) {
                       timeoutTimer.cancel();
                       completer.completeError(Exception('Network Error'));
                     }).toJS,
